@@ -11,7 +11,7 @@
 ```
 <!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='%23fbbf24'%3E%3Crect x='24' y='60' width='144' height='72' rx='12' fill='%23374151'/%3E%3Crect x='36' y='48' width='120' height='24' rx='6' fill='%23fbbf24'/%3E%3Ccircle cx='54' cy='150' r='18' fill='%23374151'/%3E%3Ccircle cx='138' cy='150' r='18' fill='%23374151'/%3E%3Ccircle cx='54' cy='150' r='9' fill='%23fbbf24'/%3E%3Ccircle cx='138' cy='150' r='9' fill='%23fbbf24'/%3E%3Cpath d='M72 72h48v24H72z' fill='%2393c5fd'/%3E%3C/svg%3E">
 
 <style>
     * {
@@ -26,6 +26,9 @@
         color: white;
         min-height: 100vh;
         padding: 10px;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
     }
 
     .container {
@@ -72,15 +75,14 @@
         transition: all 0.3s ease;
         font-size: 14px;
         font-weight: 500;
+        border: none;
+        background: none;
+        color: #d1d5db;
     }
 
     .nav-tab.active {
         background: linear-gradient(45deg, #3b82f6, #1d4ed8);
         color: white;
-    }
-
-    .nav-tab:not(.active) {
-        color: #d1d5db;
     }
 
     .tab-content {
@@ -138,11 +140,16 @@
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        outline: none;
     }
 
     .btn:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:active:not(:disabled) {
+        transform: translateY(0);
     }
 
     .btn-start {
@@ -282,6 +289,17 @@
         font-size: 13px;
     }
 
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 15px;
+        color: #fca5a5;
+        font-size: 13px;
+        display: none;
+    }
+
     @media (max-width: 480px) {
         .container {
             margin: 5px;
@@ -309,11 +327,15 @@
         </div>
 
 ```
+    <div class="error-message" id="errorMessage">
+        ⚠️ A apărut o problemă. Aplicația va reporni automat.
+    </div>
+
     <div class="nav-tabs">
-        <div class="nav-tab active" onclick="switchTab('timer')">⏱️ Timer</div>
-        <div class="nav-tab" onclick="switchTab('stats')">📊 Statistici</div>
-        <div class="nav-tab" onclick="switchTab('history')">📜 Istoric</div>
-        <div class="nav-tab" onclick="switchTab('settings')">⚙️ Export</div>
+        <button class="nav-tab active" data-tab="timer">⏱️ Timer</button>
+        <button class="nav-tab" data-tab="stats">📊 Statistici</button>
+        <button class="nav-tab" data-tab="history">📜 Istoric</button>
+        <button class="nav-tab" data-tab="settings">⚙️ Export</button>
     </div>
 
     <!-- Timer Tab -->
@@ -329,13 +351,13 @@
         </div>
 
         <div class="buttons">
-            <button class="btn btn-start" id="startBtn" onclick="handleStartButton()">
+            <button class="btn btn-start" id="startBtn">
                 🚀 Începe Programul
             </button>
-            <button class="btn btn-break" id="breakBtn" onclick="startBreak()" disabled>
+            <button class="btn btn-break" id="breakBtn" disabled>
                 ☕ Pauză
             </button>
-            <button class="btn btn-stop" id="stopBtn" onclick="stopWork()" disabled>
+            <button class="btn btn-stop" id="stopBtn" disabled>
                 🛑 Termină
             </button>
         </div>
@@ -396,20 +418,20 @@
     <div class="tab-content" id="settings-tab">
         <h3 style="color: #8b5cf6; margin-bottom: 15px;">⚙️ Export & Setări</h3>
         
-        <button class="btn export-btn" onclick="exportData()">
+        <button class="btn export-btn" id="exportBtn">
             📁 Exportă date (JSON)
         </button>
         
-        <button class="btn export-btn" onclick="exportCSV()">
+        <button class="btn export-btn" id="exportCsvBtn">
             📊 Exportă CSV
         </button>
         
-        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData()">
-        <button class="btn export-btn" onclick="document.getElementById('importFile').click()">
+        <input type="file" id="importFile" accept=".json" style="display: none;">
+        <button class="btn export-btn" id="importBtn">
             📂 Importă date
         </button>
         
-        <button class="btn export-btn" onclick="clearAllData()" style="background: linear-gradient(45deg, #ef4444, #dc2626);">
+        <button class="btn export-btn" id="clearBtn" style="background: linear-gradient(45deg, #ef4444, #dc2626);">
             🗑️ Șterge toate datele
         </button>
 
@@ -421,12 +443,20 @@
 </div>
 
 <script>
-    // Database configuration
-    let db;
-    const DB_NAME = 'TruckDriverApp';
-    const DB_VERSION = 1;
+    // Prevent page reload on errors
+    window.addEventListener('error', function(e) {
+        console.error('JavaScript Error:', e.error);
+        showError('Eroare JavaScript: ' + e.message);
+        e.preventDefault();
+    });
 
-    // Application state
+    window.addEventListener('unhandledrejection', function(e) {
+        console.error('Promise Rejection:', e.reason);
+        showError('Eroare Promise: ' + e.reason);
+        e.preventDefault();
+    });
+
+    // Application state - stored in memory only initially
     let appState = {
         currentSession: null,
         isWorking: false,
@@ -434,74 +464,80 @@
         startTime: null,
         breakStartTime: null,
         timer: null,
-        sessions: []
+        sessions: [],
+        currentTab: 'timer'
     };
 
     // Constants for Swedish regulations
     const BREAK_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
-    const MIN_BREAK_TIME = 30 * 60 * 1000; // 30 minutes minimum break (Swedish law)
+    const MIN_BREAK_TIME = 30 * 60 * 1000; // 30 minutes minimum break
     const MAX_DAILY_WORK = 10 * 60 * 60 * 1000; // 10 hours max per day
 
-    // Initialize IndexedDB
-    function initDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => {
-                db = request.result;
-                resolve(db);
-            };
-            
-            request.onupgradeneeded = (event) => {
-                db = event.target.result;
-                
-                // Sessions store
-                if (!db.objectStoreNames.contains('sessions')) {
-                    const sessionsStore = db.createObjectStore('sessions', { keyPath: 'id', autoIncrement: true });
-                    sessionsStore.createIndex('date', 'date');
-                    sessionsStore.createIndex('startTime', 'startTime');
-                }
-            };
-        });
-    }
+    // Safe localStorage wrapper
+    const storage = {
+        get: function(key) {
+            try {
+                const value = localStorage.getItem(key);
+                return value ? JSON.parse(value) : null;
+            } catch (e) {
+                console.warn('LocalStorage read error:', e);
+                return null;
+            }
+        },
+        set: function(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+                return true;
+            } catch (e) {
+                console.warn('LocalStorage write error:', e);
+                return false;
+            }
+        },
+        remove: function(key) {
+            try {
+                localStorage.removeItem(key);
+                return true;
+            } catch (e) {
+                console.warn('LocalStorage remove error:', e);
+                return false;
+            }
+        }
+    };
 
-    // Database operations
-    function saveSession(session) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['sessions'], 'readwrite');
-            const store = transaction.objectStore('sessions');
-            const request = store.add(session);
-            
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
+    // DOM element cache
+    const elements = {
+        status: null,
+        statusText: null,
+        timer: null,
+        sessionInfo: null,
+        startBtn: null,
+        breakBtn: null,
+        stopBtn: null,
+        nextBreak: null,
+        nextBreakTime: null,
+        errorMessage: null,
+        navTabs: null
+    };
 
-    function getAllSessions() {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['sessions'], 'readonly');
-            const store = transaction.objectStore('sessions');
-            const request = store.getAll();
-            
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    function clearAllSessions() {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['sessions'], 'readwrite');
-            const store = transaction.objectStore('sessions');
-            const request = store.clear();
-            
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
+    // Cache DOM elements
+    function cacheElements() {
+        elements.status = document.getElementById('status');
+        elements.statusText = document.getElementById('statusText');
+        elements.timer = document.getElementById('timer');
+        elements.sessionInfo = document.getElementById('sessionInfo');
+        elements.startBtn = document.getElementById('startBtn');
+        elements.breakBtn = document.getElementById('breakBtn');
+        elements.stopBtn = document.getElementById('stopBtn');
+        elements.nextBreak = document.getElementById('nextBreak');
+        elements.nextBreakTime = document.getElementById('nextBreakTime');
+        elements.errorMessage = document.getElementById('errorMessage');
+        elements.navTabs = document.querySelectorAll('.nav-tab');
     }
 
     // Utility functions
     function formatTime(milliseconds) {
+        if (!milliseconds || milliseconds < 0) return '00:00:00';
+        
         const hours = Math.floor(milliseconds / (1000 * 60 * 60));
         const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
@@ -509,73 +545,116 @@
     }
 
     function formatHours(milliseconds) {
+        if (!milliseconds || milliseconds < 0) return 0;
         return Math.round(milliseconds / (1000 * 60 * 60) * 10) / 10;
     }
 
-    function getWeekStart(date) {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as first day
-        return new Date(d.setDate(diff));
+    function showError(message) {
+        if (elements.errorMessage) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+            setTimeout(() => {
+                if (elements.errorMessage) {
+                    elements.errorMessage.style.display = 'none';
+                }
+            }, 5000);
+        }
     }
 
+    function showNotification(title, message, color = '#ef4444') {
+        try {
+            const notification = document.createElement('div');
+            notification.className = 'notification pulse';
+            notification.style.background = `linear-gradient(45deg, ${color}, ${color}dd)`;
+            notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 8000);
+
+            return notification;
+        } catch (e) {
+            console.error('Notification error:', e);
+        }
+    }
+
+    // Tab switching
     function switchTab(tabName) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        try {
+            // Update state
+            appState.currentTab = tabName;
+            
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            elements.navTabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
 
-        // Show selected tab
-        document.getElementById(`${tabName}-tab`).classList.add('active');
-        event.target.classList.add('active');
+            // Show selected tab
+            const targetTab = document.getElementById(`${tabName}-tab`);
+            const targetNavTab = document.querySelector(`[data-tab="${tabName}"]`);
+            
+            if (targetTab) targetTab.classList.add('active');
+            if (targetNavTab) targetNavTab.classList.add('active');
 
-        // Update data when switching to stats
-        if (tabName === 'stats') {
-            updateWeeklyStats();
-        } else if (tabName === 'history') {
-            updateHistory();
+            // Update data when switching to stats or history
+            if (tabName === 'stats') {
+                updateWeeklyStats();
+            } else if (tabName === 'history') {
+                updateHistory();
+            }
+            
+            // Save state
+            storage.set('currentTab', tabName);
+        } catch (e) {
+            console.error('Tab switch error:', e);
+            showError('Eroare la schimbarea tab-ului');
         }
     }
 
     // Timer and work management
     function updateTimer() {
-        if (!appState.isWorking && !appState.isOnBreak) return;
+        try {
+            if (!appState.isWorking && !appState.isOnBreak) return;
 
-        const now = Date.now();
-        let elapsed;
+            const now = Date.now();
+            let elapsed;
 
-        if (appState.isOnBreak) {
-            elapsed = now - appState.breakStartTime;
-            document.getElementById('timer').textContent = formatTime(elapsed);
-            document.getElementById('statusText').textContent = 'În pauză';
-            document.getElementById('status').className = 'status resting';
-        } else if (appState.isWorking) {
-            elapsed = now - appState.startTime;
-            document.getElementById('timer').textContent = formatTime(elapsed);
-            document.getElementById('statusText').textContent = 'La volan';
-            document.getElementById('status').className = 'status working';
+            if (appState.isOnBreak) {
+                elapsed = now - appState.breakStartTime;
+                if (elements.timer) elements.timer.textContent = formatTime(elapsed);
+                if (elements.statusText) elements.statusText.textContent = 'În pauză';
+                if (elements.status) elements.status.className = 'status resting';
+            } else if (appState.isWorking) {
+                elapsed = now - appState.startTime;
+                if (elements.timer) elements.timer.textContent = formatTime(elapsed);
+                if (elements.statusText) elements.statusText.textContent = 'La volan';
+                if (elements.status) elements.status.className = 'status working';
 
-            // Update next break countdown
-            const timeUntilBreak = BREAK_INTERVAL - (elapsed % BREAK_INTERVAL);
-            document.getElementById('nextBreakTime').textContent = formatTime(timeUntilBreak);
+                // Update next break countdown
+                const timeUntilBreak = BREAK_INTERVAL - (elapsed % BREAK_INTERVAL);
+                if (elements.nextBreakTime) elements.nextBreakTime.textContent = formatTime(timeUntilBreak);
 
-            // Check if break is needed (with 1-minute warning)
-            if (timeUntilBreak <= 60000 && timeUntilBreak > 59000) {
-                showBreakWarning();
-            } else if (elapsed > 0 && elapsed % BREAK_INTERVAL < 1000) {
-                showBreakNotification();
+                // Check if break is needed
+                if (timeUntilBreak <= 60000 && timeUntilBreak > 59000) {
+                    showBreakWarning();
+                } else if (elapsed > 0 && elapsed % BREAK_INTERVAL < 1000) {
+                    showBreakNotification();
+                }
             }
 
-            // Check daily limit warning
-            if (elapsed >= MAX_DAILY_WORK - 30 * 60 * 1000 && elapsed < MAX_DAILY_WORK - 29 * 60 * 1000) {
-                showDailyLimitWarning();
+            if (elements.sessionInfo) {
+                elements.sessionInfo.textContent = `Sesiunea curentă: ${formatTime(elapsed)}`;
             }
+        } catch (e) {
+            console.error('Timer update error:', e);
         }
-
-        document.getElementById('sessionInfo').textContent = `Sesiunea curentă: ${formatTime(elapsed)}`;
     }
 
     function showBreakWarning() {
@@ -583,390 +662,591 @@
     }
 
     function showBreakNotification() {
-        const notification = showNotification(
+        showNotification(
             '🛑 PAUZĂ OBLIGATORIE!', 
             'Ai condus 6 ore consecutive. Fă o pauză de minim 30 minute conform reglementărilor din Suedia!',
             '#ef4444'
         );
 
-        document.getElementById('breakBtn').classList.add('pulse');
+        if (elements.breakBtn) elements.breakBtn.classList.add('pulse');
 
         // Browser notification
         if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Pauză Obligatorie - Reglementări Suedia!', {
-                body: 'Ai condus 6 ore consecutive. Fă o pauză de minim 30 minute!',
-                icon: 'icon-192.png',
-                requireInteraction: true
-            });
-        }
-    }
-
-    function showDailyLimitWarning() {
-        showNotification(
-            '⚠️ Limită zilnică!', 
-            'Te apropii de limita de 10 ore/zi. Planifică încheierea programului!',
-            '#f59e0b'
-        );
-    }
-
-    function showNotification(title, message, color = '#ef4444') {
-        const notification = document.createElement('div');
-        notification.className = 'notification pulse';
-        notification.style.background = `linear-gradient(45deg, ${color}, ${color}dd)`;
-        notification.innerHTML = `<strong>${title}</strong><br>${message}`;
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+            try {
+                new Notification('Pauză Obligatorie - Reglementări Suedia!', {
+                    body: 'Ai condus 6 ore consecutive. Fă o pauză de minim 30 minute!',
+                    requireInteraction: true
+                });
+            } catch (e) {
+                console.warn('Browser notification failed:', e);
             }
-        }, 10000);
-
-        return notification;
-    }
-
-    function handleStartButton() {
-        if (appState.isOnBreak) {
-            resumeWork();
-        } else {
-            startWork();
         }
     }
 
     function startWork() {
-        appState.isWorking = true;
-        appState.isOnBreak = false;
-        appState.startTime = Date.now();
-        appState.currentSession = {
-            startTime: appState.startTime,
-            date: new Date().toDateString(),
-            breaks: []
-        };
+        try {
+            appState.isWorking = true;
+            appState.isOnBreak = false;
+            appState.startTime = Date.now();
+            appState.currentSession = {
+                startTime: appState.startTime,
+                date: new Date().toDateString(),
+                breaks: []
+            };
 
-        // Update UI
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('breakBtn').disabled = false;
-        document.getElementById('stopBtn').disabled = false;
-        document.getElementById('nextBreak').style.display = 'block';
+            // Update UI
+            if (elements.startBtn) {
+                elements.startBtn.disabled = true;
+                elements.startBtn.textContent = '🚀 Pornit...';
+            }
+            if (elements.breakBtn) elements.breakBtn.disabled = false;
+            if (elements.stopBtn) elements.stopBtn.disabled = false;
+            if (elements.nextBreak) elements.nextBreak.style.display = 'block';
 
-        // Start timer
-        appState.timer = setInterval(updateTimer, 1000);
-        updateTimer();
+            // Start timer
+            if (appState.timer) clearInterval(appState.timer);
+            appState.timer = setInterval(updateTimer, 1000);
+            updateTimer();
 
-        console.log('Program început la:', new Date(appState.startTime).toLocaleString());
+            // Save state
+            saveAppState();
+            
+            console.log('Program început la:', new Date(appState.startTime).toLocaleString());
+        } catch (e) {
+            console.error('Start work error:', e);
+            showError('Eroare la pornirea programului');
+        }
     }
 
     function startBreak() {
-        if (!appState.isWorking) return;
+        try {
+            if (!appState.isWorking) return;
 
-        appState.isOnBreak = true;
-        appState.breakStartTime = Date.now();
-        
-        appState.currentSession.breaks.push({
-            start: appState.breakStartTime
-        });
+            appState.isOnBreak = true;
+            appState.breakStartTime = Date.now();
+            
+            appState.currentSession.breaks.push({
+                start: appState.breakStartTime
+            });
 
-        // Update UI
-        document.getElementById('breakBtn').disabled = true;
-        document.getElementById('breakBtn').classList.remove('pulse');
-        document.getElementById('nextBreak').style.display = 'none';
+            // Update UI
+            if (elements.breakBtn) {
+                elements.breakBtn.disabled = true;
+                elements.breakBtn.classList.remove('pulse');
+            }
+            if (elements.nextBreak) elements.nextBreak.style.display = 'none';
 
-        document.getElementById('startBtn').textContent = '▶️ Reia Conducerea';
-        document.getElementById('startBtn').disabled = false;
+            if (elements.startBtn) {
+                elements.startBtn.textContent = '▶️ Reia Conducerea';
+                elements.startBtn.disabled = false;
+            }
 
-        console.log('Pauză începută la:', new Date(appState.breakStartTime).toLocaleString());
+            // Save state
+            saveAppState();
+            
+            console.log('Pauză începută la:', new Date(appState.breakStartTime).toLocaleString());
+        } catch (e) {
+            console.error('Start break error:', e);
+            showError('Eroare la începerea pauzei');
+        }
     }
 
     function resumeWork() {
-        if (!appState.isOnBreak) return;
+        try {
+            if (!appState.isOnBreak) return;
 
-        const breakDuration = Date.now() - appState.breakStartTime;
-        
-        // Check minimum break time
-        if (breakDuration < MIN_BREAK_TIME) {
-            const minutesNeeded = Math.ceil((MIN_BREAK_TIME - breakDuration) / 60000);
-            alert(`Pauza trebuie să fie de minim 30 minute conform reglementărilor din Suedia! Mai ai nevoie de ${minutesNeeded} minute.`);
-            return;
-        }
+            const breakDuration = Date.now() - appState.breakStartTime;
+            
+            // Check minimum break time
+            if (breakDuration < MIN_BREAK_TIME) {
+                const minutesNeeded = Math.ceil((MIN_BREAK_TIME - breakDuration) / 60000);
+                alert(`Pauza trebuie să fie de minim 30 minute conform reglementărilor din Suedia! Mai ai nevoie de ${minutesNeeded} minute.`);
+                return;
+            }
 
-        // Record break end
-        const currentBreak = appState.currentSession.breaks[appState.currentSession.breaks.length - 1];
-        currentBreak.end = Date.now();
-        currentBreak.duration = breakDuration;
-
-        appState.isOnBreak = false;
-        appState.breakStartTime = null;
-
-        // Update UI
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('startBtn').textContent = '🚀 Începe Programul';
-        document.getElementById('breakBtn').disabled = false;
-        document.getElementById('nextBreak').style.display = 'block';
-
-        console.log('Conducerea reluată după pauza de:', formatTime(breakDuration));
-    }
-
-    async function stopWork() {
-        if (!appState.isWorking) return;
-
-        const endTime = Date.now();
-        const totalDuration = endTime - appState.startTime;
-
-        // Complete current session
-        appState.currentSession.endTime = endTime;
-        appState.currentSession.totalDuration = totalDuration;
-
-        // If currently on break, end the break
-        if (appState.isOnBreak && appState.currentSession.breaks.length > 0) {
+            // Record break end
             const currentBreak = appState.currentSession.breaks[appState.currentSession.breaks.length - 1];
-            currentBreak.end = endTime;
-            currentBreak.duration = endTime - appState.breakStartTime;
+            currentBreak.end = Date.now();
+            currentBreak.duration = breakDuration;
+
+            appState.isOnBreak = false;
+            appState.breakStartTime = null;
+
+            // Update UI
+            if (elements.startBtn) {
+                elements.startBtn.disabled = true;
+                elements.startBtn.textContent = '🚀 Pornit...';
+            }
+            if (elements.breakBtn) elements.breakBtn.disabled = false;
+            if (elements.nextBreak) elements.nextBreak.style.display = 'block';
+
+            // Save state
+            saveAppState();
+            
+            console.log('Conducerea reluată după pauza de:', formatTime(breakDuration));
+        } catch (e) {
+            console.error('Resume work error:', e);
+            showError('Eroare la reluarea conducerii');
         }
-
-        // Calculate driving time (total time minus break time)
-        const totalBreakTime = appState.currentSession.breaks
-            .filter(b => b.end)
-            .reduce((sum, b) => sum + b.duration, 0);
-        appState.currentSession.drivingTime = totalDuration - totalBreakTime;
-
-        // Save to database
-        try {
-            await saveSession(appState.currentSession);
-            console.log('Sesiune salvată în baza de date');
-        } catch (error) {
-            console.error('Eroare la salvarea sesiunii:', error);
-            alert('Eroare la salvarea datelor. Încearcă din nou.');
-            return;
-        }
-
-        // Reset state
-        appState.isWorking = false;
-        appState.isOnBreak = false;
-        appState.startTime = null;
-        appState.breakStartTime = null;
-        appState.currentSession = null;
-
-        if (appState.timer) {
-            clearInterval(appState.timer);
-            appState.timer = null;
-        }
-
-        // Update UI
-        document.getElementById('status').className = 'status idle';
-        document.getElementById('statusText').textContent = 'Inactiv';
-        document.getElementById('timer').textContent = '00:00:00';
-        document.getElementById('sessionInfo').textContent = '';
-        
-        document.getElementById('startBtn').disabled = false;
-        document.getElementById('startBtn').textContent = '🚀 Începe Programul';
-        document.getElementById('breakBtn').disabled = true;
-        document.getElementById('breakBtn').classList.remove('pulse');
-        document.getElementById('stopBtn').disabled = true;
-        document.getElementById('nextBreak').style.display = 'none';
-
-        // Refresh data
-        await loadSessions();
-        updateWeeklyStats();
-        updateHistory();
-
-        console.log('Program terminat. Durata totală:', formatTime(totalDuration));
     }
 
-    // Statistics and history
-    async function loadSessions() {
+    function stopWork() {
         try {
-            appState.sessions = await getAllSessions();
-            appState.sessions.sort((a, b) => b.startTime - a.startTime);
-        } catch (error) {
-            console.error('Eroare la încărcarea sesiunilor:', error);
+            if (!appState.isWorking) return;
+
+            const endTime = Date.now();
+            const totalDuration = endTime - appState.startTime;
+
+            // Complete current session
+            appState.currentSession.endTime = endTime;
+            appState.currentSession.totalDuration = totalDuration;
+
+            // If currently on break, end the break
+            if (appState.isOnBreak && appState.currentSession.breaks.length > 0) {
+                const currentBreak = appState.currentSession.breaks[appState.currentSession.breaks.length - 1];
+                currentBreak.end = endTime;
+                currentBreak.duration = endTime - appState.breakStartTime;
+            }
+
+            // Calculate driving time
+            const totalBreakTime = appState.currentSession.breaks
+                .filter(b => b.end)
+                .reduce((sum, b) => sum + b.duration, 0);
+            appState.currentSession.drivingTime = totalDuration - totalBreakTime;
+
+            // Add to sessions
+            appState.sessions.unshift(appState.currentSession);
+
+            // Reset state
+            appState.isWorking = false;
+            appState.isOnBreak = false;
+            appState.startTime = null;
+            appState.breakStartTime = null;
+            appState.currentSession = null;
+
+            if (appState.timer) {
+                clearInterval(appState.timer);
+                appState.timer = null;
+            }
+
+            // Update UI
+            if (elements.status) elements.status.className = 'status idle';
+            if (elements.statusText) elements.statusText.textContent = 'Inactiv';
+            if (elements.timer) elements.timer.textContent = '00:00:00';
+            if (elements.sessionInfo) elements.sessionInfo.textContent = '';
+            
+            if (elements.startBtn) {
+                elements.startBtn.disabled = false;
+                elements.startBtn.textContent = '🚀 Începe Programul';
+            }
+            if (elements.breakBtn) {
+                elements.breakBtn.disabled = true;
+                elements.breakBtn.classList.remove('pulse');
+            }
+            if (elements.stopBtn) elements.stopBtn.disabled = true;
+            if (elements.nextBreak) elements.nextBreak.style.display = 'none';
+
+            // Save sessions
+            saveSessions();
+            
+            // Clear app state
+            storage.remove('appState');
+
+            console.log('Program terminat. Durata totală:', formatTime(totalDuration));
+        } catch (e) {
+            console.error('Stop work error:', e);
+            showError('Eroare la terminarea programului');
         }
+    }
+
+    // State management
+    function saveAppState() {
+        try {
+            const stateToSave = {
+                ...appState,
+                timer: null // Don't save the timer interval
+            };
+            storage.set('appState', stateToSave);
+        } catch (e) {
+            console.warn('Save app state error:', e);
+        }
+    }
+
+    function loadAppState() {
+        try {
+            const savedState = storage.get('appState');
+            if (savedState) {
+                appState = { ...appState, ...savedState, timer: null };
+                
+                // Restore UI if working
+                if (appState.isWorking || appState.isOnBreak) {
+                    restoreWorkingState();
+                }
+            }
+            
+            const savedTab = storage.get('currentTab');
+            if (savedTab) {
+                appState.currentTab = savedTab;
+            }
+        } catch (e) {
+            console.warn('Load app state error:', e);
+        }
+    }
+
+    function restoreWorkingState() {
+        try {
+            if (appState.isWorking) {
+                // Restore timer
+                if (appState.timer) clearInterval(appState.timer);
+                appState.timer = setInterval(updateTimer, 1000);
+                
+                // Restore UI
+                if (elements.startBtn) {
+                    elements.startBtn.disabled = appState.isOnBreak ? false : true;
+                    elements.startBtn.textContent = appState.isOnBreak ? '▶️ Reia Conducerea' : '🚀 Pornit...';
+                }
+                if (elements.breakBtn) {
+                    elements.breakBtn.disabled = appState.isOnBreak;
+                    if (!appState.isOnBreak) elements.breakBtn.classList.remove('pulse');
+                }
+                if (elements.stopBtn) elements.stopBtn.disabled = false;
+                if (elements.nextBreak) elements.nextBreak.style.display = appState.isOnBreak ? 'none' : 'block';
+                
+                updateTimer();
+            }
+        } catch (e) {
+            console.error('Restore working state error:', e);
+            // Reset on error
+            appState.isWorking = false;
+            appState.isOnBreak = false;
+            storage.remove('appState');
+        }
+    }
+
+    function saveSessions() {
+        try {
+            storage.set('sessions', appState.sessions);
+        } catch (e) {
+            console.warn('Save sessions error:', e);
+        }
+    }
+
+    function loadSessions() {
+        try {
+            const savedSessions = storage.get('sessions');
+            if (savedSessions && Array.isArray(savedSessions)) {
+                appState.sessions = savedSessions;
+            }
+        } catch (e) {
+            console.warn('Load sessions error:', e);
+        }
+    }
+
+    // Statistics
+    function getWeekStart(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
     }
 
     function updateWeeklyStats() {
-        const weekStart = getWeekStart(new Date());
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 7);
+        try {
+            const weekStart = getWeekStart(new Date());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 7);
 
-        const weeklySessions = appState.sessions.filter(session => {
-            const sessionDate = new Date(session.startTime);
-            return sessionDate >= weekStart && sessionDate < weekEnd;
-        });
+            const weeklySessions = appState.sessions.filter(session => {
+                const sessionDate = new Date(session.startTime);
+                return sessionDate >= weekStart && sessionDate < weekEnd;
+            });
 
-        const weeklyHours = weeklySessions.reduce((sum, session) => sum + session.totalDuration, 0);
-        const weeklyDriving = weeklySessions.reduce((sum, session) => sum + (session.drivingTime || 0), 0);
-        const weeklyBreaks = weeklySessions.reduce((sum, session) => sum + session.breaks.filter(b => b.end).length, 0);
+            const weeklyHours = weeklySessions.reduce((sum, session) => sum + (session.totalDuration || 0), 0);
+            const weeklyDriving = weeklySessions.reduce((sum, session) => sum + (session.drivingTime || 0), 0);
+            const weeklyBreaks = weeklySessions.reduce((sum, session) => sum + (session.breaks || []).filter(b => b.end).length, 0);
 
-        document.getElementById('weeklyHours').textContent = formatHours(weeklyHours) + 'h';
-        document.getElementById('weeklyDays').textContent = weeklySessions.length;
-        document.getElementById('weeklyDriving').textContent = formatHours(weeklyDriving) + 'h';
-        document.getElementById('weeklyBreaks').textContent = weeklyBreaks;
+            // Update UI
+            const weeklyHoursEl = document.getElementById('weeklyHours');
+            const weeklyDaysEl = document.getElementById('weeklyDays');
+            const weeklyDrivingEl = document.getElementById('weeklyDriving');
+            const weeklyBreaksEl = document.getElementById('weeklyBreaks');
+            const totalSessionsEl = document.getElementById('totalSessions');
+            const averageSessionEl = document.getElementById('averageSession');
 
-        // Overall stats
-        document.getElementById('totalSessions').textContent = appState.sessions.length;
-        const avgSession = appState.sessions.length > 0 
-            ? appState.sessions.reduce((sum, s) => sum + s.totalDuration, 0) / appState.sessions.length 
-            : 0;
-        document.getElementById('averageSession').textContent = formatHours(avgSession) + 'h';
+            if (weeklyHoursEl) weeklyHoursEl.textContent = formatHours(weeklyHours) + 'h';
+            if (weeklyDaysEl) weeklyDaysEl.textContent = weeklySessions.length;
+            if (weeklyDrivingEl) weeklyDrivingEl.textContent = formatHours(weeklyDriving) + 'h';
+            if (weeklyBreaksEl) weeklyBreaksEl.textContent = weeklyBreaks;
+
+            if (totalSessionsEl) totalSessionsEl.textContent = appState.sessions.length;
+            
+            const avgSession = appState.sessions.length > 0 
+                ? appState.sessions.reduce((sum, s) => sum + (s.totalDuration || 0), 0) / appState.sessions.length 
+                : 0;
+            if (averageSessionEl) averageSessionEl.textContent = formatHours(avgSession) + 'h';
+        } catch (e) {
+            console.error('Update weekly stats error:', e);
+        }
     }
 
     function updateHistory() {
-        const historyList = document.getElementById('historyList');
-        
-        if (appState.sessions.length === 0) {
-            historyList.innerHTML = '<p style="color: #9ca3af; text-align: center;">Nu există sesiuni înregistrate</p>';
-            return;
+        try {
+            const historyList = document.getElementById('historyList');
+            if (!historyList) return;
+            
+            if (appState.sessions.length === 0) {
+                historyList.innerHTML = '<p style="color: #9ca3af; text-align: center;">Nu există sesiuni înregistrate</p>';
+                return;
+            }
+
+            historyList.innerHTML = appState.sessions.slice(0, 20).map(session => {
+                const breakCount = (session.breaks || []).filter(b => b.end).length;
+                const totalBreakTime = (session.breaks || [])
+                    .filter(b => b.end)
+                    .reduce((sum, b) => sum + (b.duration || 0), 0);
+
+                const startDate = new Date(session.startTime);
+                const endDate = new Date(session.endTime);
+
+                return `
+                    <div class="history-item">
+                        <div class="time">
+                            ${startDate.toLocaleDateString('ro-RO')} 
+                            ${startDate.toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'})} - 
+                            ${endDate.toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'})}
+                        </div>
+                        <div class="duration">
+                            Total: ${formatTime(session.totalDuration || 0)} | 
+                            Conducere: ${formatTime(session.drivingTime || 0)} | 
+                            Pauze: ${breakCount} (${formatTime(totalBreakTime)})
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error('Update history error:', e);
         }
-
-        historyList.innerHTML = appState.sessions.slice(0, 20).map(session => {
-            const breakCount = session.breaks.filter(b => b.end).length;
-            const totalBreakTime = session.breaks
-                .filter(b => b.end)
-                .reduce((sum, b) => sum + b.duration, 0);
-
-            const startDate = new Date(session.startTime);
-            const endDate = new Date(session.endTime);
-
-            return `
-                <div class="history-item">
-                    <div class="time">
-                        ${startDate.toLocaleDateString('ro-RO')} 
-                        ${startDate.toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'})} - 
-                        ${endDate.toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'})}
-                    </div>
-                    <div class="duration">
-                        Total: ${formatTime(session.totalDuration)} | 
-                        Conducere: ${formatTime(session.drivingTime || 0)} | 
-                        Pauze: ${breakCount} (${formatTime(totalBreakTime)})
-                    </div>
-                </div>
-            `;
-        }).join('');
     }
 
-    // Export/Import functions
+    // Export/Import
     function exportData() {
-        const data = {
-            version: '1.0',
-            exportDate: new Date().toISOString(),
-            sessions: appState.sessions
-        };
+        try {
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                sessions: appState.sessions
+            };
 
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `truck-driver-data-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `truck-driver-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error('Export error:', e);
+            showError('Eroare la exportul datelor');
+        }
     }
 
     function exportCSV() {
-        const headers = ['Data', 'Ora Start', 'Ora Sfarsit', 'Durata Totala (h)', 'Timp Conducere (h)', 'Numar Pauze', 'Timp Pauze (h)'];
-        
-        const rows = appState.sessions.map(session => {
-            const startDate = new Date(session.startTime);
-            const endDate = new Date(session.endTime);
-            const breakCount = session.breaks.filter(b => b.end).length;
-            const totalBreakTime = session.breaks.filter(b => b.end).reduce((sum, b) => sum + b.duration, 0);
+        try {
+            const headers = ['Data', 'Ora Start', 'Ora Sfarsit', 'Durata Totala (h)', 'Timp Conducere (h)', 'Numar Pauze', 'Timp Pauze (h)'];
+            
+            const rows = appState.sessions.map(session => {
+                const startDate = new Date(session.startTime);
+                const endDate = new Date(session.endTime);
+                const breakCount = (session.breaks || []).filter(b => b.end).length;
+                const totalBreakTime = (session.breaks || []).filter(b => b.end).reduce((sum, b) => sum + (b.duration || 0), 0);
 
-            return [
-                startDate.toLocaleDateString('ro-RO'),
-                startDate.toLocaleTimeString('ro-RO'),
-                endDate.toLocaleTimeString('ro-RO'),
-                formatHours(session.totalDuration),
-                formatHours(session.drivingTime || 0),
-                breakCount,
-                formatHours(totalBreakTime)
-            ];
-        });
+                return [
+                    startDate.toLocaleDateString('ro-RO'),
+                    startDate.toLocaleTimeString('ro-RO'),
+                    endDate.toLocaleTimeString('ro-RO'),
+                    formatHours(session.totalDuration || 0),
+                    formatHours(session.drivingTime || 0),
+                    breakCount,
+                    formatHours(totalBreakTime)
+                ];
+            });
 
-        const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `truck-driver-report-${new Date().toISOString().split('T')[0]}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+            const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `truck-driver-report-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error('Export CSV error:', e);
+            showError('Eroare la exportul CSV');
+        }
     }
 
-    async function importData() {
-        const file = document.getElementById('importFile').files[0];
-        if (!file) return;
-
+    function importData() {
         try {
-            const text = await file.text();
-            const data = JSON.parse(text);
-            
-            if (data.sessions && Array.isArray(data.sessions)) {
-                for (const session of data.sessions) {
-                    await saveSession(session);
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.sessions && Array.isArray(data.sessions)) {
+                        appState.sessions = [...data.sessions, ...appState.sessions];
+                        saveSessions();
+                        updateWeeklyStats();
+                        updateHistory();
+                        alert(`Import reușit! ${data.sessions.length} sesiuni importate.`);
+                    } else {
+                        alert('Format invalid de fișier!');
+                    }
+                } catch (parseError) {
+                    console.error('Parse error:', parseError);
+                    alert('Eroare la citirea fișierului!');
                 }
                 
-                await loadSessions();
-                updateWeeklyStats();
-                updateHistory();
-                alert(`Import reușit! ${data.sessions.length} sesiuni importate.`);
-            } else {
-                alert('Format invalid de fișier!');
-            }
-        } catch (error) {
-            console.error('Eroare la import:', error);
-            alert('Eroare la importul datelor!');
+                fileInput.value = '';
+            };
+            
+            reader.readAsText(file);
+        } catch (e) {
+            console.error('Import error:', e);
+            showError('Eroare la importul datelor');
         }
-        
-        document.getElementById('importFile').value = '';
     }
 
-    async function clearAllData() {
-        if (confirm('Sigur vrei să ștergi toate datele? Această acțiune nu poate fi anulată!')) {
-            try {
-                await clearAllSessions();
+    function clearAllData() {
+        try {
+            if (confirm('Sigur vrei să ștergi toate datele? Această acțiune nu poate fi anulată!')) {
                 appState.sessions = [];
+                storage.remove('sessions');
+                storage.remove('appState');
                 updateWeeklyStats();
                 updateHistory();
                 alert('Toate datele au fost șterse!');
-            } catch (error) {
-                console.error('Eroare la ștergerea datelor:', error);
-                alert('Eroare la ștergerea datelor!');
             }
+        } catch (e) {
+            console.error('Clear data error:', e);
+            showError('Eroare la ștergerea datelor');
+        }
+    }
+
+    // Event listeners
+    function setupEventListeners() {
+        try {
+            // Navigation tabs
+            elements.navTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.dataset.tab;
+                    switchTab(targetTab);
+                });
+            });
+
+            // Work control buttons
+            if (elements.startBtn) {
+                elements.startBtn.addEventListener('click', function() {
+                    if (appState.isOnBreak) {
+                        resumeWork();
+                    } else {
+                        startWork();
+                    }
+                });
+            }
+
+            if (elements.breakBtn) {
+                elements.breakBtn.addEventListener('click', startBreak);
+            }
+
+            if (elements.stopBtn) {
+                elements.stopBtn.addEventListener('click', stopWork);
+            }
+
+            // Export/Import buttons
+            const exportBtn = document.getElementById('exportBtn');
+            const exportCsvBtn = document.getElementById('exportCsvBtn');
+            const importBtn = document.getElementById('importBtn');
+            const importFile = document.getElementById('importFile');
+            const clearBtn = document.getElementById('clearBtn');
+
+            if (exportBtn) exportBtn.addEventListener('click', exportData);
+            if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportCSV);
+            if (importBtn) importBtn.addEventListener('click', () => importFile.click());
+            if (importFile) importFile.addEventListener('change', importData);
+            if (clearBtn) clearBtn.addEventListener('click', clearAllData);
+
+        } catch (e) {
+            console.error('Setup event listeners error:', e);
         }
     }
 
     // Initialize app
-    async function initApp() {
+    function initApp() {
         try {
-            await initDB();
-            await loadSessions();
+            console.log('Inițializarea aplicației...');
+            
+            // Cache DOM elements
+            cacheElements();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load data
+            loadSessions();
+            loadAppState();
+            
+            // Switch to saved tab
+            switchTab(appState.currentTab);
+            
+            // Update displays
             updateWeeklyStats();
             updateHistory();
-            console.log('Aplicația a fost inițializată cu succes');
 
             // Request notification permission
             if ('Notification' in window && Notification.permission === 'default') {
-                await Notification.requestPermission();
+                Notification.requestPermission().catch(e => {
+                    console.warn('Notification permission error:', e);
+                });
             }
-        } catch (error) {
-            console.error('Eroare la inițializarea aplicației:', error);
-            alert('Eroare la pornirea aplicației. Încearcă să reîncarci pagina.');
+            
+            console.log('Aplicația a fost inițializată cu succes');
+        } catch (e) {
+            console.error('Init app error:', e);
+            showError('Eroare la inițializarea aplicației');
         }
     }
 
-    // Service Worker registration
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(registration => console.log('SW registered'))
-                .catch(error => console.log('SW registration failed'));
-        });
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        try {
+            if (appState.timer) {
+                clearInterval(appState.timer);
+            }
+            if (appState.isWorking || appState.isOnBreak) {
+                saveAppState();
+            }
+        } catch (e) {
+            console.error('Cleanup error:', e);
+        }
+    });
+
+    // Start the app when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
     }
 
-    // Start the app
-    initApp();
+    // Disable service worker to prevent caching issues
+    console.log('Aplicația PWA pentru șoferi de camion - versiune stabilă');
 </script>
 ```
 
