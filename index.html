@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Șofer Camion - Suedia</title>
+    <meta name="theme-color" content="#1f2937">
+    <meta name="description" content="Aplicație PWA pentru gestionarea programului de lucru conform reglementărilor din Suedia">
+
+```
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        color: white;
+        min-height: 100vh;
+        padding: 10px;
+    }
+
+    .container {
+        max-width: 420px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .header h1 {
+        font-size: 22px;
+        margin-bottom: 8px;
+        color: #fbbf24;
+    }
+
+    .header p {
+        font-size: 14px;
+        color: #d1d5db;
+    }
+
+    .nav-tabs {
+        display: flex;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        margin-bottom: 20px;
+        padding: 4px;
+    }
+
+    .nav-tab {
+        flex: 1;
+        padding: 12px 8px;
+        text-align: center;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .nav-tab.active {
+        background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+
+    .nav-tab:not(.active) {
+        color: #d1d5db;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .status {
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .status.working {
+        background: rgba(34, 197, 94, 0.2);
+        border-color: #22c55e;
+    }
+
+    .status.resting {
+        background: rgba(251, 191, 36, 0.2);
+        border-color: #fbbf24;
+    }
+
+    .status.idle {
+        background: rgba(156, 163, 175, 0.2);
+        border-color: #9ca3af;
+    }
+
+    .timer {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 12px 0;
+        font-family: 'Courier New', monospace;
+    }
+
+    .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 15px 12px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-start {
+        background: linear-gradient(45deg, #22c55e, #16a34a);
+        color: white;
+        grid-column: 1 / -1;
+    }
+
+    .btn-break {
+        background: linear-gradient(45deg, #fbbf24, #f59e0b);
+        color: white;
+    }
+
+    .btn-stop {
+        background: linear-gradient(45deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .next-break {
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #fbbf24;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: #d1d5db;
+    }
+
+    .weekly-summary {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .history-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 4px solid #22c55e;
+    }
+
+    .history-item .time {
+        font-weight: bold;
+        color: #fbbf24;
+        font-size: 14px;
+    }
+
+    .history-item .duration {
+        font-size: 12px;
+        color: #d1d5db;
+        margin-top: 4px;
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #ef4444, #dc2626);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+    }
+
+    .export-btn {
+        background: linear-gradient(45deg, #8b5cf6, #7c3aed);
+        color: white;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .regulation-info {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 15px;
+        font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            margin: 5px;
+            padding: 20px;
+        }
+        
+        .timer {
+            font-size: 24px;
+        }
+        
+        .nav-tab {
+            font-size: 12px;
+            padding: 10px 6px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚛 Program Șofer Camion</h1>
+            <p>Reglementări Suedia | Timp de lucru EU</p>
+        </div>
+
+```
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('timer')">⏱️ Timer</div>
+        <div class="nav-tab" onclick="switchTab('stats')">📊 Statistici</div>
+        <div class="nav-tab" onclick="switchTab('history')">📜 Istoric</div>
+        <div class="nav-tab" onclick="switchTab('settings')">⚙️ Export</div>
+    </div>
+
+    <!-- Timer Tab -->
+    <div class="tab-content active" id="timer-tab">
+        <div class="regulation-info">
+            🇸🇪 <strong>Reglementări Suedia:</strong> Pauză obligatorie de min. 30 min după 6h de lucru. Maxim 10h lucru/zi.
+        </div>
+
+        <div class="status idle" id="status">
+            <div>📍 Status: <span id="statusText">Inactiv</span></div>
+            <div class="timer" id="timer">00:00:00</div>
+            <div id="sessionInfo"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-start" id="startBtn" onclick="handleStartButton()">
+                🚀 Începe Programul
+            </button>
+            <button class="btn btn-break" id="breakBtn" onclick="startBreak()" disabled>
+                ☕ Pauză
+            </button>
+            <button class="btn btn-stop" id="stopBtn" onclick="stopWork()" disabled>
+                🛑 Termină
+            </button>
+        </div>
+
+        <div class="next-break" id="nextBreak" style="display: none;">
+            <div>⏰ Următoarea pauză obligatorie în:</div>
+            <div style="font-weight: bold; font-size: 18px; margin-top: 5px;" id="nextBreakTime">--:--:--</div>
+        </div>
+    </div>
+
+    <!-- Stats Tab -->
+    <div class="tab-content" id="stats-tab">
+        <div class="weekly-summary">
+            <h3 style="color: #3b82f6; margin-bottom: 10px;">📅 Săptămâna curentă</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="weeklyHours">0h</div>
+                    <div class="stat-label">Ore totale</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="weeklyDays">0</div>
+                    <div class="stat-label">Zile lucrate</div>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="weeklyDriving">0h</div>
+                    <div class="stat-label">Ore conducere</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="weeklyBreaks">0</div>
+                    <div class="stat-label">Pauze luate</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalSessions">0</div>
+                <div class="stat-label">Sesiuni totale</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="averageSession">0h</div>
+                <div class="stat-label">Medie sesiune</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-content" id="history-tab">
+        <h3 style="color: #fbbf24; margin-bottom: 15px;">📊 Istoric Sesiuni</h3>
+        <div id="historyList">
+            <p style="color: #9ca3af; text-align: center;">Nu există sesiuni înregistrate</p>
+        </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div class="tab-content" id="settings-tab">
+        <h3 style="color: #8b5cf6; margin-bottom: 15px;">⚙️ Export & Setări</h3>
+        
+        <button class="btn export-btn" onclick="exportData()">
+            📁 Exportă date (JSON)
+        </button>
+        
+        <button class="btn export-btn" onclick="exportCSV()">
+            📊 Exportă CSV
+        </button>
+        
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData()">
+        <button class="btn export-btn" onclick="document.getElementById('importFile').click()">
+            📂 Importă date
+        </button>
+        
+        <button class="btn export-btn" onclick="clearAllData()" style="background: linear-gradient(45deg, #ef4444, #dc2626);">
+            🗑️ Șterge toate datele
+        </button>
+
+        <div class="regulation-info" style="margin-top: 20px;">
+            <strong>Backup recomandat:</strong><br>
+            Exportă datele regulat pentru siguranță. Aplicația salvează automat în browser.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Database configuration
+    let db;
+    const DB_NAME = 'TruckDriverApp';
+    const DB_VERSION = 1;
+
+    // Application state
+    let appState = {
+        currentSession: null,
+        isWorking: false,
+        isOnBreak: false,
+        startTime: null,
+        breakStartTime: null,
+        timer: null,
+        sessions: []
+    };
+
+    // Constants for Swedish regulations
+    const BREAK_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
+    const MIN_BREAK_TIME = 30 * 60 * 1000; // 30 minutes minimum break (Swedish law)
+    const MAX_DAILY_WORK = 10 * 60 * 60 * 1000; // 10 hours max per day
+
+    // Initialize IndexedDB
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+                db = request.result;
+                resolve(db);
+            };
+            
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+                
+                // Sessions store
+                if (!db.objectStoreNames.contains('sessions')) {
+                    const sessionsStore = db.createObjectStore('sessions', { keyPath: 'id', autoIncrement: true });
+                    sessionsStore.createIndex('date', 'date');
+                    sessionsStore.createIndex('startTime', 'startTime');
+                }
+            };
+        });
+    }
+
+    // Database operations
+    function saveSession(session) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['sessions'], 'readwrite');
+            const store = transaction.objectStore('sessions');
+            const request = store.add(session);
+            
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    function getAllSessions() {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['sessions'], 'readonly');
+            const store = transaction.objectStore('sessions');
+            const request = store.getAll();
+            
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    function clearAllSessions() {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['sessions'], 'readwrite');
+            const store = transaction.objectStore('sessions');
+            const request = store.clear();
+            
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    // Utility functions
+    function formatTime(milliseconds) {
+        const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+        const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function formatHours(milliseconds) {
+        return Math.round(milliseconds / (1000 * 60 * 60) * 10) / 10;
+    }
+
+    function getWeekStart(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as first day
+        return new Date(d.setDate(diff));
+    }
+
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        event.target.classList.add('active');
+
+        // Update data when switching to stats
+        if (tabName === 'stats') {
+            updateWeeklyStats();
+        } else if (tabName === 'history') {
+            updateHistory();
+        }
+    }
+
+    // Timer and work management
+    function updateTimer() {
+        if (!appState.isWorking && !appState.isOnBreak) return;
+
+        const now = Date.now();
+        let elapsed;
+
+        if (appState.isOnBreak) {
+            elapsed = now - appState.breakStartTime;
+            document.getElementById('timer').textContent = formatTime(elapsed);
+            document.getElementById('statusText').textContent = 'În pauză';
+            document.getElementById('status').className = 'status resting';
+        } else if (appState.isWorking) {
+            elapsed = now - appState.startTime;
+            document.getElementById('timer').textContent = formatTime(elapsed);
+            document.getElementById('statusText').textContent = 'La volan';
+            document.getElementById('status').className = 'status working';
+
+            // Update next break countdown
+            const timeUntilBreak = BREAK_INTERVAL - (elapsed % BREAK_INTERVAL);
+            document.getElementById('nextBreakTime').textContent = formatTime(timeUntilBreak);
+
+            // Check if break is needed (with 1-minute warning)
+            if (timeUntilBreak <= 60000 && timeUntilBreak > 59000) {
+                showBreakWarning();
+            } else if (elapsed > 0 && elapsed % BREAK_INTERVAL < 1000) {
+                showBreakNotification();
+            }
+
+            // Check daily limit warning
+            if (elapsed >= MAX_DAILY_WORK - 30 * 60 * 1000 && elapsed < MAX_DAILY_WORK - 29 * 60 * 1000) {
+                showDailyLimitWarning();
+            }
+        }
+
+        document.getElementById('sessionInfo').textContent = `Sesiunea curentă: ${formatTime(elapsed)}`;
+    }
+
+    function showBreakWarning() {
+        showNotification('⚠️ Atenție!', 'Pauza obligatorie în 1 minut!', '#fbbf24');
+    }
+
+    function showBreakNotification() {
+        const notification = showNotification(
+            '🛑 PAUZĂ OBLIGATORIE!', 
+            'Ai condus 6 ore consecutive. Fă o pauză de minim 30 minute conform reglementărilor din Suedia!',
+            '#ef4444'
+        );
+
+        document.getElementById('breakBtn').classList.add('pulse');
+
+        // Browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Pauză Obligatorie - Reglementări Suedia!', {
+                body: 'Ai condus 6 ore consecutive. Fă o pauză de minim 30 minute!',
+                icon: 'icon-192.png',
+                requireInteraction: true
+            });
+        }
+    }
+
+    function showDailyLimitWarning() {
+        showNotification(
+            '⚠️ Limită zilnică!', 
+            'Te apropii de limita de 10 ore/zi. Planifică încheierea programului!',
+            '#f59e0b'
+        );
+    }
+
+    function showNotification(title, message, color = '#ef4444') {
+        const notification = document.createElement('div');
+        notification.className = 'notification pulse';
+        notification.style.background = `linear-gradient(45deg, ${color}, ${color}dd)`;
+        notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 10000);
+
+        return notification;
+    }
+
+    function handleStartButton() {
+        if (appState.isOnBreak) {
+            resumeWork();
+        } else {
+            startWork();
+        }
+    }
+
+    function startWork() {
+        appState.isWorking = true;
+        appState.isOnBreak = false;
+        appState.startTime = Date.now();
+        appState.currentSession = {
+            startTime: appState.startTime,
+            date: new Date().toDateString(),
+            breaks: []
+        };
+
+        // Update UI
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('breakBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = false;
+        document.getElementById('nextBreak').style.display = 'block';
+
+        // Start timer
+        appState.timer = setInterval(updateTimer, 1000);
+        updateTimer();
+
+        console.log('Program început la:', new Date(appState.startTime).toLocaleString());
+    }
+
+    function startBreak() {
+        if (!appState.isWorking) return;
+
+        appState.isOnBreak = true;
+        appState.breakStartTime = Date.now();
+        
+        appState.currentSession.breaks.push({
+            start: appState.breakStartTime
+        });
+
+        // Update UI
+        document.getElementById('breakBtn').disabled = true;
+        document.getElementById('breakBtn').classList.remove('pulse');
+        document.getElementById('nextBreak').style.display = 'none';
+
+        document.getElementById('startBtn').textContent = '▶️ Reia Conducerea';
+        document.getElementById('startBtn').disabled = false;
+
+        console.log('Pauză începută la:', new Date(appState.breakStartTime).toLocaleString());
+    }
+
+    function resumeWork() {
+        if (!appState.isOnBreak) return;
+
+        const breakDuration = Date.now() - appState.breakStartTime;
+        
+        // Check minimum break time
+        if (breakDuration < MIN_BREAK_TIME) {
+            const minutesNeeded = Math.ceil((MIN_BREAK_TIME - breakDuration) / 60000);
+            alert(`Pauza trebuie să fie de minim 30 minute conform reglementărilor din Suedia! Mai ai nevoie de ${minutesNeeded} minute.`);
+            return;
+        }
+
+        // Record break end
+        const currentBreak = appState.currentSession.breaks[appState.currentSession.breaks.length - 1];
+        currentBreak.end = Date.now();
+        currentBreak.duration = breakDuration;
+
+        appState.isOnBreak = false;
+        appState.breakStartTime = null;
+
+        // Update UI
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('startBtn').textContent = '🚀 Începe Programul';
+        document.getElementById('breakBtn').disabled = false;
+        document.getElementById('nextBreak').style.display = 'block';
+
+        console.log('Conducerea reluată după pauza de:', formatTime(breakDuration));
+    }
+
+    async function stopWork() {
+        if (!appState.isWorking) return;
+
+        const endTime = Date.now();
+        const totalDuration = endTime - appState.startTime;
+
+        // Complete current session
+        appState.currentSession.endTime = endTime;
+        appState.currentSession.totalDuration = totalDuration;
+
+        // If currently on break, end the break
+        if (appState.isOnBreak && appState.currentSession.breaks.length > 0) {
+            const currentBreak = appState.currentSession.breaks[appState.currentSession.breaks.length - 1];
+            currentBreak.end = endTime;
+            currentBreak.duration = endTime - appState.breakStartTime;
+        }
+
+        // Calculate driving time (total time minus break time)
+        const totalBreakTime = appState.currentSession.breaks
+            .filter(b => b.end)
+            .reduce((sum, b) => sum + b.duration, 0);
+        appState.currentSession.drivingTime = totalDuration - totalBreakTime;
+
+        // Save to database
+        try {
+            await saveSession(appState.currentSession);
+            console.log('Sesiune salvată în baza de date');
+        } catch (error) {
+            console.error('Eroare la salvarea sesiunii:', error);
+            alert('Eroare la salvarea datelor. Încearcă din nou.');
+            return;
+        }
+
+        // Reset state
+        appState.isWorking = false;
+        appState.isOnBreak = false;
+        appState.startTime = null;
+        appState.breakStartTime = null;
+        appState.currentSession = null;
+
+        if (appState.timer) {
+            clearInterval(appState.timer);
+            appState.timer = null;
+        }
+
+        // Update UI
+        document.getElementById('status').className = 'status idle';
+        document.getElementById('statusText').textContent = 'Inactiv';
+        document.getElementById('timer').textContent = '00:00:00';
+        document.getElementById('sessionInfo').textContent = '';
+        
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('startBtn').textContent = '🚀 Începe Programul';
+        document.getElementById('breakBtn').disabled = true;
+        document.getElementById('breakBtn').classList.remove('pulse');
+        document.getElementById('stopBtn').disabled = true;
+        document.getElementById('nextBreak').style.display = 'none';
+
+        // Refresh data
+        await loadSessions();
+        updateWeeklyStats();
+        updateHistory();
+
+        console.log('Program terminat. Durata totală:', formatTime(totalDuration));
+    }
+
+    // Statistics and history
+    async function loadSessions() {
+        try {
+            appState.sessions = await getAllSessions();
+            appState.sessions.sort((a, b) => b.startTime - a.startTime);
+        } catch (error) {
+            console.error('Eroare la încărcarea sesiunilor:', error);
+        }
+    }
+
+    function updateWeeklyStats() {
+        const weekStart = getWeekStart(new Date());
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+
+        const weeklySessions = appState.sessions.filter(session => {
+            const sessionDate = new Date(session.startTime);
+            return sessionDate >= weekStart && sessionDate < weekEnd;
+        });
+
+        const weeklyHours = weeklySessions.reduce((sum, session) => sum + session.totalDuration, 0);
+        const weeklyDriving = weeklySessions.reduce((sum, session) => sum + (session.drivingTime || 0), 0);
+        const weeklyBreaks = weeklySessions.reduce((sum, session) => sum + session.breaks.filter(b => b.end).length, 0);
+
+        document.getElementById('weeklyHours').textContent = formatHours(weeklyHours) + 'h';
+        document.getElementById('weeklyDays').textContent = weeklySessions.length;
+        document.getElementById('weeklyDriving').textContent = formatHours(weeklyDriving) + 'h';
+        document.getElementById('weeklyBreaks').textContent = weeklyBreaks;
+
+        // Overall stats
+        document.getElementById('totalSessions').textContent = appState.sessions.length;
+        const avgSession = appState.sessions.length > 0 
+            ? appState.sessions.reduce((sum, s) => sum + s.totalDuration, 0) / appState.sessions.length 
+            : 0;
+        document.getElementById('averageSession').textContent = formatHours(avgSession) + 'h';
+    }
+
+    function updateHistory() {
+        const historyList = document.getElementById('historyList');
+        
+        if (appState.sessions.length === 0) {
+            historyList.innerHTML = '<p style="color: #9ca3af; text-align: center;">Nu există sesiuni înregistrate</p>';
+            return;
+        }
+
+        historyList.innerHTML = appState.sessions.slice(0, 20).map(session => {
+            const breakCount = session.breaks.filter(b => b.end).length;
+            const totalBreakTime = session.breaks
+                .filter(b => b.end)
+                .reduce((sum, b) => sum + b.duration, 0);
+
+            const startDate = new Date(session.startTime);
+            const endDate = new Date(session.endTime);
+
+            return `
+                <div class="history-item">
+                    <div class="time">
+                        ${startDate.toLocaleDateString('ro-RO')} 
+                        ${startDate.toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'})} - 
+                        ${endDate.toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'})}
+                    </div>
+                    <div class="duration">
+                        Total: ${formatTime(session.totalDuration)} | 
+                        Conducere: ${formatTime(session.drivingTime || 0)} | 
+                        Pauze: ${breakCount} (${formatTime(totalBreakTime)})
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Export/Import functions
+    function exportData() {
+        const data = {
+            version: '1.0',
+            exportDate: new Date().toISOString(),
+            sessions: appState.sessions
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `truck-driver-data-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportCSV() {
+        const headers = ['Data', 'Ora Start', 'Ora Sfarsit', 'Durata Totala (h)', 'Timp Conducere (h)', 'Numar Pauze', 'Timp Pauze (h)'];
+        
+        const rows = appState.sessions.map(session => {
+            const startDate = new Date(session.startTime);
+            const endDate = new Date(session.endTime);
+            const breakCount = session.breaks.filter(b => b.end).length;
+            const totalBreakTime = session.breaks.filter(b => b.end).reduce((sum, b) => sum + b.duration, 0);
+
+            return [
+                startDate.toLocaleDateString('ro-RO'),
+                startDate.toLocaleTimeString('ro-RO'),
+                endDate.toLocaleTimeString('ro-RO'),
+                formatHours(session.totalDuration),
+                formatHours(session.drivingTime || 0),
+                breakCount,
+                formatHours(totalBreakTime)
+            ];
+        });
+
+        const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `truck-driver-report-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    async function importData() {
+        const file = document.getElementById('importFile').files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            
+            if (data.sessions && Array.isArray(data.sessions)) {
+                for (const session of data.sessions) {
+                    await saveSession(session);
+                }
+                
+                await loadSessions();
+                updateWeeklyStats();
+                updateHistory();
+                alert(`Import reușit! ${data.sessions.length} sesiuni importate.`);
+            } else {
+                alert('Format invalid de fișier!');
+            }
+        } catch (error) {
+            console.error('Eroare la import:', error);
+            alert('Eroare la importul datelor!');
+        }
+        
+        document.getElementById('importFile').value = '';
+    }
+
+    async function clearAllData() {
+        if (confirm('Sigur vrei să ștergi toate datele? Această acțiune nu poate fi anulată!')) {
+            try {
+                await clearAllSessions();
+                appState.sessions = [];
+                updateWeeklyStats();
+                updateHistory();
+                alert('Toate datele au fost șterse!');
+            } catch (error) {
+                console.error('Eroare la ștergerea datelor:', error);
+                alert('Eroare la ștergerea datelor!');
+            }
+        }
+    }
+
+    // Initialize app
+    async function initApp() {
+        try {
+            await initDB();
+            await loadSessions();
+            updateWeeklyStats();
+            updateHistory();
+            console.log('Aplicația a fost inițializată cu succes');
+
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                await Notification.requestPermission();
+            }
+        } catch (error) {
+            console.error('Eroare la inițializarea aplicației:', error);
+            alert('Eroare la pornirea aplicației. Încearcă să reîncarci pagina.');
+        }
+    }
+
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        });
+    }
+
+    // Start the app
+    initApp();
+</script>
+```
+
+</body>
+</html>
