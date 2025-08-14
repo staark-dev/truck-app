@@ -1493,6 +1493,8 @@ class DriverApp {
                             Coordonate: ${locationData.latitude.toFixed(6)}, ${locationData.longitude.toFixed(6)}
                         </div>
                     `;
+                } else {
+                     console.warn('GPS update failed:');
                 }
             }
         } catch (error) {
