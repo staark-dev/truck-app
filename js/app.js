@@ -1251,7 +1251,36 @@ class DriverApp {
 
     loadGPSPage() {
         const gpsContent = document.getElementById('gpsContent');
-        if (gpsContent && gpsContent.innerHTML.includes('Încărcare')) {
+        if (!gpsContent) return;
+
+        if (gpsContent.dataset.state !== 'loading') {
+            // dacă vrei să eviți re-încarcarea când e deja gata, decomentează:
+            console.log('GPS deja încărcat.');
+            return;
+        }
+
+        gpsContent.dataset.state = 'loading';
+        gpsContent.innerHTML = `
+            <div style="text-align:center; padding:40px;">
+            <div class="loading-spinner"></div>
+            <div>Se obține locația...</div>
+            </div>
+        `;
+
+        // Get real location data
+        this.getRealLocationData()
+            .then((locationData) => {
+                gpsContent.innerHTML = this.createGPSPageContent(locationData);
+                gpsContent.dataset.state = 'ready';
+                this.startLocationUpdates();
+            })
+            .catch((error) => {
+                console.error('Error getting location:', error);
+                gpsContent.innerHTML = this.createGPSPageContent(null);
+                gpsContent.dataset.state = 'error';
+            });
+
+        /*if (gpsContent && gpsContent.innerHTML.includes('Încărcare')) {
             // Show loading state
             console.log("Sa detectat pagina de gps...");
             gpsContent.innerHTML = `
@@ -1274,7 +1303,7 @@ class DriverApp {
                 });
         } else {
             console.log("Nu sa detectat pagina de gps...");
-        }
+        }*/
     }
 
     async getRealLocationData() {
