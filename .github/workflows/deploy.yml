@@ -47,7 +47,7 @@ jobs:
           echo "🔍 Checking required PWA files..."
           
           # Check required files exist
-          required_files=("index.html" "manifest.json" "sw.js" "app.js")
+          required_files=("./index.html" "./manifest.json" "./sw.js" "../../js/app.js")
           for file in "${required_files[@]}"; do
             if [ ! -f "$file" ]; then
               echo "❌ Missing required file: $file"
