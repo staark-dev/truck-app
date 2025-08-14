@@ -1173,6 +1173,9 @@ class DriverApp {
                 // Load page content if needed
                 if (window.app && typeof window.app.loadPageContent === 'function') {
                     window.app.loadPageContent(tabName);
+                } else {
+                    console.log(`Table ${tabName} content has been refresh !`);
+                    window.app.loadPageContent(tabName);
                 }
                 
                 // Show toast
