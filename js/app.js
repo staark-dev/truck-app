@@ -1468,9 +1468,10 @@ class DriverApp {
             
             const gpsContent = document.getElementById('gpsContent');
             
-            if (gpsContent && !gpsContent.innerHTML.includes('Încărcare')) {
+            if (gpsContent && gpsContent.dataset.state === 'loading') {
                 // Update only the status part to avoid full page reload
                 const statusDiv = gpsContent.querySelector('div[style*="background: #e8f5e8"]');
+
                 if (statusDiv) {
                     const speed = locationData.speed ? Math.round(locationData.speed * 3.6) : 0;
                     const accuracy = Math.round(locationData.accuracy);
