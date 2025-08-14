@@ -1600,7 +1600,7 @@ class DriverApp {
         // Always reload reports page content to get fresh data
         let reportsPage = document.getElementById('pageReports');
         if (reportsPage) {
-            return; //reportsPage.remove();
+            reportsPage.remove();
         }
         
         const newPage = document.createElement('div');

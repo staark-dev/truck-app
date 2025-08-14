@@ -354,110 +354,110 @@
 
             <!-- Reports Page -->
             <div class="page" id="pageReports">
-            <h2 style="color: #2c3e50; margin-bottom: 20px;">📊 Rapoarte și Istoric</h2>
-            <div class="card">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">🚛 Program Curent</h3>
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background: #f44336;"></div>
-                    <span style="font-weight: bold;">Oprit</span>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-                    <div>
-                    <div style="color: #666; margin-bottom: 5px;">Început la:</div>
-                    <div style="font-weight: bold;" id="reportStartTime">--:--</div>
+                <h2 style="color: #2c3e50; margin-bottom: 20px;">📊 Rapoarte și Istoric</h2>
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">🚛 Program Curent</h3>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #f44336;"></div>
+                        <span style="font-weight: bold;">Oprit</span>
                     </div>
-                    <div>
-                    <div style="color: #666; margin-bottom: 5px;">Activitate curentă:</div>
-                    <div style="font-weight: bold;" id="reportCurrentActivity">Nicio activitate</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                        <div>
+                        <div style="color: #666; margin-bottom: 5px;">Început la:</div>
+                        <div style="font-weight: bold;" id="reportStartTime">--:--</div>
+                        </div>
+                        <div>
+                        <div style="color: #666; margin-bottom: 5px;">Activitate curentă:</div>
+                        <div style="font-weight: bold;" id="reportCurrentActivity">Nicio activitate</div>
+                        </div>
+                    </div>
+                    </div>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <div style="font-weight: bold; margin-bottom: 10px;">⏱️ Timp astăzi</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                        <div style="display: flex; justify-content: space-between;">
+                        <span>🚗 Conducere:</span>
+                        <span style="font-weight: bold;" id="reportDriving">00:00:00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                        <span>☕ Pauze:</span>
+                        <span style="font-weight: bold;" id="reportBreaks">00:00:00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                        <span>🔧 Lucru:</span>
+                        <span style="font-weight: bold;" id="reportWork">00:00:00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                        <span>📋 Altele:</span>
+                        <span style="font-weight: bold;" id="reportOther">00:00:00</span>
+                        </div>
+                    </div>
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                        <span>⏱️ Total:</span>
+                        <span id="reportTotal">00:00:00</span>
+                    </div>
                     </div>
                 </div>
-                </div>
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                <div style="font-weight: bold; margin-bottom: 10px;">⏱️ Timp astăzi</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
-                    <div style="display: flex; justify-content: space-between;">
-                    <span>🚗 Conducere:</span>
-                    <span style="font-weight: bold;" id="reportDriving">00:00:00</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                    <span>☕ Pauze:</span>
-                    <span style="font-weight: bold;" id="reportBreaks">00:00:00</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                    <span>🔧 Lucru:</span>
-                    <span style="font-weight: bold;" id="reportWork">00:00:00</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                    <span>📋 Altele:</span>
-                    <span style="font-weight: bold;" id="reportOther">00:00:00</span>
-                    </div>
-                </div>
-                <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                    <span>⏱️ Total:</span>
-                    <span id="reportTotal">00:00:00</span>
-                </div>
-                </div>
-            </div>
 
-            <div class="card">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">📈 Statistici astăzi</h3>
-                <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="font-size: 32px; font-weight: bold;" id="statsTotalHours">0.0h</div>
-                    <div style="opacity: 0.9;">Total astăzi</div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
-                    <div>
-                    <div style="font-size: 18px; font-weight: bold;" id="statsDrivingPercent">0%</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Conducere</div>
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📈 Statistici astăzi</h3>
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 32px; font-weight: bold;" id="statsTotalHours">0.0h</div>
+                        <div style="opacity: 0.9;">Total astăzi</div>
                     </div>
-                    <div>
-                    <div style="font-size: 18px; font-weight: bold;" id="statsDrivingHours">0.0h</div>
-                    <div style="font-size: 12px; opacity: 0.9;">La volan</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
+                        <div>
+                        <div style="font-size: 18px; font-weight: bold;" id="statsDrivingPercent">0%</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Conducere</div>
+                        </div>
+                        <div>
+                        <div style="font-size: 18px; font-weight: bold;" id="statsDrivingHours">0.0h</div>
+                        <div style="font-size: 12px; opacity: 0.9;">La volan</div>
+                        </div>
+                        <div>
+                        <div style="font-size: 18px; font-weight: bold;" id="statsBreakHours">0.0h</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Pauze</div>
+                        </div>
                     </div>
-                    <div>
-                    <div style="font-size: 18px; font-weight: bold;" id="statsBreakHours">0.0h</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Pauze</div>
                     </div>
                 </div>
-                </div>
-            </div>
 
-            <div class="card">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">⚖️ Conformitate legală</h3>
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60;"></div>
-                    <span style="font-weight: bold; color: #27ae60;">Conformitate bună</span>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px;">
-                    <span>Timp conducere astăzi:</span>
-                    <span style="font-weight: bold;">0.0h / 9h</span>
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">⚖️ Conformitate legală</h3>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60;"></div>
+                        <span style="font-weight: bold; color: #27ae60;">Conformitate bună</span>
                     </div>
-                    <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
-                    <div style="background: #27ae60; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px;">
+                        <span>Timp conducere astăzi:</span>
+                        <span style="font-weight: bold;">0.0h / 9h</span>
+                        </div>
+                        <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
+                        <div style="background: #27ae60; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        <div>⏰ Timp rămas: <strong>9.0h</strong></div>
+                        <div>🚛 Pauză obligatorie la fiecare 4.5h</div>
+                        <div>📅 Odihnă săptămânală: 45h consecutiv</div>
+                    </div>
                     </div>
                 </div>
-                <div style="font-size: 14px; color: #666;">
-                    <div>⏰ Timp rămas: <strong>9.0h</strong></div>
-                    <div>🚛 Pauză obligatorie la fiecare 4.5h</div>
-                    <div>📅 Odihnă săptămânală: 45h consecutiv</div>
-                </div>
-                </div>
-            </div>
 
-            <div class="card">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">📤 Exportă rapoarte</h3>
-                <div style="display: grid; gap: 10px;">
-                <button onclick="app.exportToPDF()" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📄 Export PDF zilnic</button>
-                <button onclick="app.exportToExcel()" style="background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📊 Export Excel săptămânal</button>
-                <button onclick="app.endEmail()" style="background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📧 Trimite raport email</button>
-                <button onclick="app.printReport()" style="background: #9b59b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">🖨️ Printează raport</button>
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📤 Exportă rapoarte</h3>
+                    <div style="display: grid; gap: 10px;">
+                    <button onclick="app.exportToPDF()" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📄 Export PDF zilnic</button>
+                    <button onclick="app.exportToExcel()" style="background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📊 Export Excel săptămânal</button>
+                    <button onclick="app.endEmail()" style="background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📧 Trimite raport email</button>
+                    <button onclick="app.printReport()" style="background: #9b59b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">🖨️ Printează raport</button>
+                    </div>
                 </div>
-            </div>
             </div>
 
             <!-- Settings Page -->
