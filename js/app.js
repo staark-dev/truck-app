@@ -1938,12 +1938,7 @@ document.addEventListener('visibilitychange', function() {
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📱 Driver Support App - JavaScript loaded');
-    try {
-        initializeApp();
-    }
-    catch() {
-        
-    }
+    initializeApp();
 });
 
 console.log('📱 Driver Support App - JavaScript loaded');
