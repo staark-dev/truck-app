@@ -205,48 +205,84 @@ class DriverApp {
         this.showToast('Program terminat!');
     }
 
-    setActivity(activityType, activityName, button) {
-        if (!this.programStarted) return;
-        
-        console.log(`🎯 Setting activity: ${activityType}`);
-        
-        // Remove active class from all buttons
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // Add active class to current button
-        if (button) {
-            button.classList.add('active');
-        }
-        
-        // End previous activity
-        if (this.currentActivity) {
-            this.timeTracker.endActivity();
-        }
-        
-        // Start new activity
-        this.currentActivity = { type: activityType, name: activityName };
-        this.activityStartTime = new Date();
-        
-        // Update UI
-        document.getElementById('currentActivity').textContent = activityName;
-        
-        // Start tracking new activity
-        this.timeTracker.startActivity(activityType, this.activityStartTime);
-        
-        // Save session data
-        const sessionData = this.dataManager.getSessionData();
+    setActivity(activityType, activityName = '', button) {
+  try {
+    if (!this.programStarted) {
+      console.warn('setActivity: program not started – ignoring.');
+      return false;
+    }
+
+    // 1) Normalizare + validare
+    const VALID = ['driving', 'break', 'work', 'other'];
+    const type = VALID.includes(activityType) ? activityType : 'other';
+    const labelMap = { driving: 'Condus', break: 'Pauză', work: 'Muncă', other: 'Alte activități' };
+    const name = activityName || labelMap[type];
+
+    console.log(`🎯 setActivity -> type="${type}" name="${name}"`);
+
+    // 2) UI: butoane active (fail-safe)
+    try {
+      document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+      if (button && button.classList) button.classList.add('active');
+    } catch (e) {
+      console.warn('setActivity: could not toggle button state', e);
+    }
+
+    // 3) Închide activitatea anterioară (dacă există TimeTracker)
+    if (this.currentActivity && this.timeTracker && typeof this.timeTracker.endActivity === 'function') {
+      try { this.timeTracker.endActivity(); } 
+      catch (e) { console.warn('timeTracker.endActivity failed:', e); }
+    }
+
+    // 4) Pornește noua activitate
+    this.currentActivity   = { type, name };
+    this.activityStartTime = new Date();
+
+    // 5) Update UI (currentActivity label)
+    const caEl = document.getElementById('currentActivity');
+    if (caEl) caEl.textContent = name;
+    else console.warn('setActivity: #currentActivity element not found');
+
+    // 6) Start tracking (dacă există TimeTracker)
+    if (this.timeTracker && typeof this.timeTracker.startActivity === 'function') {
+      try { this.timeTracker.startActivity(type, this.activityStartTime); }
+      catch (e) { console.warn('timeTracker.startActivity failed:', e); }
+    } else {
+      console.warn('setActivity: timeTracker missing or invalid');
+    }
+
+    // 7) Persistă sesiunea (dacă există DataManager)
+    if (this.dataManager && typeof this.dataManager.getSessionData === 'function' && typeof this.dataManager.saveSessionData === 'function') {
+      try {
+        const sessionData = this.dataManager.getSessionData() || {};
         sessionData.currentActivity = this.currentActivity;
         this.dataManager.saveSessionData(sessionData);
-        
-        // Check compliance for driving activities
-        if (activityType === 'driving') {
-            this.alertSystem.checkDrivingCompliance();
-        }
-        
-        this.showToast(`Activitate: ${activityName}`);
+      } catch (e) {
+        console.warn('setActivity: saving session failed:', e);
+      }
+    } else {
+      console.warn('setActivity: dataManager missing or invalid');
     }
+
+    // 8) Verificări de conformitate (opțional)
+    if (type === 'driving' && this.alertSystem && typeof this.alertSystem.checkDrivingCompliance === 'function') {
+      try { this.alertSystem.checkDrivingCompliance(); }
+      catch (e) { console.warn('alertSystem.checkDrivingCompliance failed:', e); }
+    }
+
+    // 9) Feedback vizual
+    if (typeof this.showToast === 'function') this.showToast(`Activitate: ${name}`);
+    else console.log(`[Toast] Activitate: ${name}`);
+
+    return true;
+
+  } catch (err) {
+    // Log clar + NU blochează app-ul
+    console.error('❌ setActivity error:', err);
+    try { this.showAlert?.('Eroare', 'A apărut o problemă la schimbarea activității.'); } catch {}
+    return false;
+  }
+}
 
     // Voice Control
     toggleVoiceControl() {
