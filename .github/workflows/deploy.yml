@@ -297,7 +297,7 @@ jobs:
           find . -type f | sort
           
           # Check essential files
-          essential_files=("index.html" "manifest.json" "sw.js" "app.js")
+          essential_files=("index.html" "manifest.json" "sw.js" "js/app.js")
           for file in "${essential_files[@]}"; do
             if [ -f "$file" ]; then
               echo "✅ $file ready for deployment"
