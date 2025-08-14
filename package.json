@@ -195,7 +195,7 @@
     "swDest": "sw.js",
     "runtimeCaching": [
       {
-        "urlPattern": /^https:\/\/api\./,
+        "urlPattern": "",
         "handler": "NetworkFirst",
         "options": {
           "cacheName": "api-cache",
@@ -206,7 +206,7 @@
         }
       },
       {
-        "urlPattern": /\.(?:png|jpg|jpeg|svg|gif)$/,
+        "urlPattern": "",
         "handler": "CacheFirst",
         "options": {
           "cacheName": "images-cache",
