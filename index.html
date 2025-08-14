@@ -8,12 +8,37 @@
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#3498db">
     <meta name="description" content="Aplicație pentru managementul timpilor de lucru conform reglementărilor din Suedia">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
-    <!-- Safari PWA support -->
+    <!-- Safari specific meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Driver Support">
-    <link rel="apple-touch-icon" href="./icons/icon-180.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Safari icons (IMPORTANT pentru add to home) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./icons/icon-144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./icons/icon-120.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./icons/icon-114.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./icons/icon-76.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./icons/icon-72.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="./icons/icon-60.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="./icons/icon-57.png">
+    
+    <!-- Fallback icon dacă nu ai toate mărimile -->
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    
+    <!-- Safari startup screen -->
+    <link rel="apple-touch-startup-image" href="./icons/startup-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="./icons/startup-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    
+    <!-- Theme color pentru Safari -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="msapplication-TileColor" content="#667eea">
+    
+    <!-- Canonical URL (IMPORTANT pentru cache) -->
     <link rel="canonical" href="https://staark-dev.github.io/truck-app/">
     
     <!-- Prevent zoom on input focus -->
@@ -1443,6 +1468,290 @@
             width: 100%;
             justify-content: space-between;
         }
+    }
+    </style>
+    <!-- 2. JAVASCRIPT PENTRU SAFARI PWA DETECTION -->
+    <script>
+    // Safari PWA detection și fix
+    function fixSafariPWA() {
+        console.log('🍎 Safari PWA fixes loading...');
+        
+        // Check dacă rulează în PWA mode pe Safari
+        const isIOSPWA = window.navigator.standalone === true;
+        const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+        
+        console.log('Is iOS PWA:', isIOSPWA);
+        console.log('Is Safari:', isSafari);
+        
+        if (isSafari && !isIOSPWA) {
+            // Rulează în Safari browser, nu în PWA mode
+            showSafariInstallInstructions();
+        }
+        
+        // Fix pentru start_url problems
+        fixStartURL();
+        
+        // Clear problematic cache
+        clearProblematicCache();
+    }
+    
+    function showSafariInstallInstructions() {
+        // Afișează instrucțiuni pentru instalare PWA pe Safari
+        const showInstructions = localStorage.getItem('safari_instructions_shown');
+        
+        if (!showInstructions) {
+            setTimeout(() => {
+                const modal = createSafariInstructionsModal();
+                document.body.appendChild(modal);
+                localStorage.setItem('safari_instructions_shown', 'true');
+            }, 3000);
+        }
+    }
+    
+    function createSafariInstructionsModal() {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        `;
+        
+        modal.innerHTML = `
+            <div style="
+                background: white;
+                border-radius: 16px;
+                padding: 30px;
+                max-width: 320px;
+                margin: 20px;
+                text-align: center;
+                position: relative;
+            ">
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: #999;
+                ">×</button>
+                
+                <div style="font-size: 48px; margin-bottom: 15px;">📱</div>
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Instalează aplicația</h3>
+                
+                <div style="text-align: left; margin-bottom: 20px; color: #666; line-height: 1.5;">
+                    <p style="margin-bottom: 10px;"><strong>Pentru a instala pe iPhone/iPad:</strong></p>
+                    <p style="margin: 5px 0;">1. Apasă butonul <strong>Share</strong> 📤</p>
+                    <p style="margin: 5px 0;">2. Selectează <strong>"Add to Home Screen"</strong></p>
+                    <p style="margin: 5px 0;">3. Apasă <strong>"Add"</strong></p>
+                </div>
+                
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    background: #007AFF;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">Am înțeles</button>
+            </div>
+        `;
+        
+        return modal;
+    }
+    
+    function fixStartURL() {
+        // Fix pentru start_url în manifest
+        const currentURL = window.location.href;
+        const baseURL = currentURL.split('/').slice(0, -1).join('/') + '/';
+        
+        console.log('🔧 Current URL:', currentURL);
+        console.log('🔧 Base URL:', baseURL);
+        
+        // Update manifest programmatically dacă e necesar
+        updateManifestStartURL(baseURL);
+    }
+    
+    function updateManifestStartURL(baseURL) {
+        // Fetch și update manifest.json
+        fetch('./manifest.json')
+            .then(response => response.json())
+            .then(manifest => {
+                console.log('📱 Current manifest start_url:', manifest.start_url);
+                
+                // Verifică dacă start_url e corect
+                if (manifest.start_url !== baseURL && manifest.start_url !== './') {
+                    console.warn('⚠️ Manifest start_url might be incorrect');
+                    console.log('Expected:', baseURL, 'or "./"');
+                    console.log('Found:', manifest.start_url);
+                    
+                    // Sugerează fix
+                    console.log('🔧 Consider updating manifest.json start_url to "./"');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Could not fetch manifest:', error);
+            });
+    }
+    
+    function clearProblematicCache() {
+        // Clear cache care poate cauza probleme
+        try {
+            // Clear application cache
+            if ('applicationCache' in window) {
+                applicationCache.update();
+            }
+            
+            // Clear service worker cache
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    registrations.forEach(registration => {
+                        console.log('🔄 Updating service worker...');
+                        registration.update();
+                    });
+                });
+            }
+            
+            // Clear problematic localStorage entries
+            const keysToRemove = ['app_cache', 'manifest_cache'];
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            console.log('✅ Cache cleared for PWA fix');
+            
+        } catch (error) {
+            console.warn('⚠️ Cache clear failed:', error);
+        }
+    }
+    
+    // Safari specific PWA behavior fixes
+    function handleSafariPWABehavior() {
+        // Fix pentru status bar în PWA mode
+        if (window.navigator.standalone) {
+            document.body.style.paddingTop = '20px'; // Status bar offset
+            console.log('📱 Running in PWA mode');
+        }
+        
+        // Fix pentru viewport în Safari
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+        }
+        
+        // Prevent Safari zoom on input focus
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.style.fontSize = '16px'; // Prevent zoom
+        });
+    }
+    
+    // Manual install button pentru Safari
+    function createSafariInstallButton() {
+        const installBtn = document.createElement('button');
+        installBtn.innerHTML = '📱 Instalează App';
+        installBtn.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+        `;
+        
+        installBtn.onclick = () => {
+            showSafariInstallInstructions();
+        };
+        
+        // Show doar pe Safari și dacă nu e PWA
+        const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+        const isIOSPWA = window.navigator.standalone === true;
+        
+        if (isSafari && !isIOSPWA) {
+            document.body.appendChild(installBtn);
+            
+            // Hide după 10 secunde
+            setTimeout(() => {
+                installBtn.style.opacity = '0.7';
+            }, 10000);
+        }
+    }
+    
+    // Initialize Safari fixes
+    document.addEventListener('DOMContentLoaded', function() {
+        fixSafariPWA();
+        handleSafariPWABehavior();
+        
+        // Delay pentru a nu interfere cu loading
+        setTimeout(() => {
+            createSafariInstallButton();
+        }, 5000);
+    });
+    
+    // Export pentru debugging
+    window.safariPWA = {
+        fix: fixSafariPWA,
+        showInstructions: showSafariInstallInstructions,
+        clearCache: clearProblematicCache,
+        createInstallButton: createSafariInstallButton
+    };
+    </script>
+    
+    <!-- 3. CSS PENTRU SAFARI PWA -->
+    <style>
+    /* Safari PWA specific styles */
+    @supports (-webkit-touch-callout: none) {
+        /* Safari specific styles */
+        body {
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        /* PWA mode detection */
+        @media all and (display-mode: standalone) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            
+            .header {
+                padding-top: env(safe-area-inset-top);
+            }
+        }
+    }
+    
+    /* Hide Safari install button în PWA mode */
+    @media all and (display-mode: standalone) {
+        .safari-install-btn {
+            display: none !important;
+        }
+    }
+    
+    /* Fix pentru Safari viewport */
+    .ios-fix {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+    
+    html {
+        height: -webkit-fill-available;
     }
     </style>
 </body>
