@@ -1252,6 +1252,7 @@ class DriverApp {
         const gpsContent = document.getElementById('gpsContent');
         if (gpsContent && gpsContent.innerHTML.includes('Încărcare')) {
             // Show loading state
+            console.log("Sa detectat pagina de gps...");
             gpsContent.innerHTML = `
                 <div style="text-align: center; padding: 40px;">
                     <div class="loading-spinner"></div>
@@ -1270,6 +1271,8 @@ class DriverApp {
                     console.error('Error getting location:', error);
                     gpsContent.innerHTML = this.createGPSPageContent(null);
                 });
+        } else {
+            console.log("Nu sa detectat pagina de gps...");
         }
     }
 
