@@ -977,5 +977,28 @@
             initializeApp();
         });
     </script>
+    
+<script>
+(function(){
+  const box = document.createElement('pre');
+  box.id = 'debugOverlay';
+  box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;margin:0;background:#111;color:#0f0;padding:8px;font:12px/1.4 monospace;z-index:99999;opacity:.95;display:none';
+  document.body.appendChild(box);
+  const show = (msg)=>{ box.style.display='block'; box.textContent += msg + '\n'; };
+
+  // Catch runtime errors
+  window.addEventListener('error', e => show('❌ ' + (e.error?.stack || e.message)));
+
+  // Catch unhandled promise rejections
+  window.addEventListener('unhandledrejection', e => show('⚠️ Promise: ' + (e.reason?.stack || e.reason)));
+
+  // Simple console mirror for quick checks (toggle by long-press)
+  let pressTimer;
+  window.addEventListener('touchstart', ()=> pressTimer = setTimeout(()=> box.style.display = (box.style.display==='none'?'block':'none'), 700));
+  window.addEventListener('touchend', ()=> clearTimeout(pressTimer));
+  console.log = ((orig)=>function(){ show('📝 ' + Array.from(arguments).map(a=> typeof a==='object'?JSON.stringify(a):String(a)).join(' ')); orig.apply(console, arguments); })(console.log);
+})();
+</script>
+    
 </body>
 </html>
