@@ -298,3 +298,99 @@
         border: 1px solid #ddd;
     }
 }
+
+.location-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.location-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.location-card button {
+    transition: all 0.2s ease;
+}
+
+.location-card button:hover {
+    background: rgba(255,255,255,0.3) !important;
+    transform: scale(1.05);
+}
+
+.location-card button:active {
+    transform: scale(0.95);
+}
+
+.weather-card {
+    transition: all 0.2s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.weather-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+/* Dark mode support */
+.dark-mode .weather-card {
+    background: #34495e !important;
+    border-color: #4a6278 !important;
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .weather-card #weatherTemp {
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .weather-card #weatherDesc {
+    color: #bdc3c7 !important;
+}
+
+/* Loading animation for location update */
+.location-updating .location-card {
+    opacity: 0.8;
+}
+
+.location-updating .location-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: loading-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    .location-card {
+        padding: 15px;
+    }
+    
+    .location-card h3 {
+        font-size: 16px;
+    }
+    
+    .location-card button {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    
+    .location-card > div:last-child {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .location-card > div:last-child > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
