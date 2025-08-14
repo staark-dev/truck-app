@@ -1,20 +1,20 @@
 // Service Worker for Driver Support App
-const CACHE_NAME = 'driver-support-v1.0.0';
-const STATIC_CACHE_NAME = 'driver-support-static-v1.0.0';
-const DYNAMIC_CACHE_NAME = 'driver-support-dynamic-v1.0.0';
+const CACHE_NAME = 'driver-support-v1.0.2';
+const STATIC_CACHE_NAME = 'driver-support-static-v1.0.2';
+const DYNAMIC_CACHE_NAME = 'driver-support-dynamic-v1.0.2';
 
 // Files to cache for offline functionality
 const STATIC_FILES = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/js/app.js',
-    '/js/data-manager.js',
-    '/js/time-tracker.js',
-    '/js/location-service.js',
-    '/js/alerts.js',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png'
+    './',
+    './index.html',
+    './manifest.json',
+    './js/app.js',
+    './js/data-manager.js',
+    './js/time-tracker.js',
+    './js/location-service.js',
+    './js/alerts.js',
+    './icons/icon-192x192.png',
+    './icons/icon-512x512.png'
 ];
 
 // Install event - cache static files
