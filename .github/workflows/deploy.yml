@@ -17,59 +17,73 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: '18'
   LIGHTHOUSE_CI_BUILD_PATH: './dist'
 
 jobs:
   build-and-validate:
     name: 🔨 Build and Validate
     runs-on: ubuntu-latest
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
+      # ===== Node.js cu fallback =====
+      - name: 📦 Setup Node.js (try 20.x)
+        id: node20
         uses: actions/setup-node@v4
+        continue-on-error: true
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '20.x'
+          check-latest: true
           cache: 'npm'
 
-      - name: 📋 Install CLI tools
-        run: |
-          npm i -g uglify-js clean-css-cli @lhci/cli http-server
+      - name: 📦 Fallback to Node.js 18.x
+        id: node18
+        if: steps.node20.outcome != 'success'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          check-latest: true
+          cache: 'npm'
 
-      - name: 🔍 Validate required files
+      - name: 🔎 Node version
         run: |
-          echo "🔍 Checking required PWA files..."
+          echo "Using Node:" $(node -v || echo "not found")
+          echo "NPM:" $(npm -v || echo "not found")
+
+      - name: 📋 Install CLI tools
+        run: npm i -g uglify-js clean-css-cli
+
+      - name: 🔍 Validate required PWA files
+        run: |
           req=("index.html" "manifest.json" "sw.js" "app.js")
           for f in "${req[@]}"; do
             [[ -f "$f" ]] || { echo "❌ Missing $f"; exit 1; }
             echo "✅ $f"
           done
-
-          echo "🔍 Checking icons..."
           [[ -f icons/icon-192x192.png ]] || { echo "❌ Missing icons/icon-192x192.png"; exit 1; }
           [[ -f icons/icon-512x512.png ]] || { echo "❌ Missing icons/icon-512x512.png"; exit 1; }
-          echo "✅ icons ok"
+          echo "✅ icons OK"
 
       - name: ✅ Validate manifest.json
         run: |
           node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8'))"
-          echo "✅ manifest.json is valid JSON"
-          (grep -q '"name"' manifest.json && grep -q '"short_name"' manifest.json && grep -q '"start_url"' manifest.json) || { echo "❌ Required fields missing in manifest.json"; exit 1; }
-          echo "✅ required fields present"
+          (grep -q '"name"' manifest.json && grep -q '"short_name"' manifest.json && grep -q '"start_url"' manifest.json) \
+            || { echo "❌ Required fields missing in manifest.json"; exit 1; }
+          echo "✅ manifest.json OK"
 
       - name: 🗜️ Build (minify)
         run: |
           mkdir -p dist
           rsync -a --exclude 'dist' ./ dist/
           cd dist
-          # Minify JS if not already .min.js
+          # Minify JS (evită .min.js deja minificate)
           for js in *.js js/*.js 2>/dev/null; do
             [[ -f "$js" ]] || continue
             [[ "$js" == *.min.js ]] && continue
             echo "Minifying $js"
-            uglifyjs "$js" -c -m -o "${js%.js}.min.js"
+            npx uglify-js "$js" -c -m -o "${js%.js}.min.js"
             sed -i "s|$js|${js%.js}.min.js|g" index.html || true
           done
 
@@ -105,6 +119,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -120,7 +135,6 @@ jobs:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
       - name: 🔍 Post-deployment health check
         run: |
           URL="${{ steps.deployment.outputs.page_url }}"
