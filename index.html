@@ -595,7 +595,7 @@
             document.getElementById('installBanner').classList.remove('show');
         }
 
-        document.getElementById('installBtn').addEventListener('click', async () => {
+        /*document.getElementById('installBtn').addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
@@ -604,7 +604,7 @@
                 }
                 deferredPrompt = null;
             }
-        });
+        });*/
 
         // Initialize app when page loads
         document.addEventListener('DOMContentLoaded', function() {
