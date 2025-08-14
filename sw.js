@@ -1,17 +1,17 @@
 // Driver Support App - Service Worker
-const CACHE_NAME = 'driver-support-v1.0.0';
+const CACHE_NAME = 'driver-support-v1.0.2';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/js/app.js',
-  '/js/data-manager.js',
-  '/js/time-tracker.js',
-  '/js/location-service.js',
-  '/js/alerts.js',
-  '/style.css',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  './',
+  './index.html',
+  './js/app.js',
+  './js/data-manager.js',
+  './js/time-tracker.js',
+  './js/location-service.js',
+  './js/alerts.js',
+  './style.css',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 // Install event - cache resources
