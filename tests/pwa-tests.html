@@ -435,7 +435,7 @@
         // PWA Tests
         testSuite.addTest('manifest', 'Manifest Validation', async () => {
             try {
-                const response = await fetch('./manifest.json');
+                const response = await fetch('../manifest.json');
                 const manifest = await response.json();
                 
                 const requiredFields = ['name', 'short_name', 'start_url', 'display', 'icons'];
@@ -508,7 +508,7 @@
             
             for (const size of iconSizes) {
                 try {
-                    const response = await fetch(`./icons/icon-${size}x${size}.png`);
+                    const response = await fetch(`../icons/icon-${size}x${size}.png`);
                     if (!response.ok) {
                         missingIcons.push(`${size}x${size}`);
                     }
