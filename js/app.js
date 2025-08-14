@@ -1237,6 +1237,7 @@ class DriverApp {
         // Lazy load page content for better performance
         switch (tabName) {
             case 'gps':
+                console.log('Loading content GPS Page');
                 this.loadGPSPage();
                 break;
             case 'fuel':
