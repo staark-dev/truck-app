@@ -1,8 +1,8 @@
 {
   "name": "Driver Support Pro - Suedia",
-  "short_name": "DriverSupport",
+  "short_name": "Driver Support Pro",
   "description": "Aplicație pentru managementul timpilor de lucru conform reglementărilor din Suedia",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "start_url": "./?pwa=1",
   "display": "standalone",
   "orientation": "portrait",
