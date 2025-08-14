@@ -805,12 +805,49 @@
                     </div>
                 </div>
 
-                <!-- Weather Widget -->
-                <div class="weather-widget" id="weatherWidget">
-                    <div class="weather-temp" id="weatherTemp">
-                        <span class="loading"></span>
+                <div class="location-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0; font-size: 18px;">📍 Locația Curentă</h3>
+                        <button onclick="refreshLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                            🔄
+                        </button>
                     </div>
-                    <div class="weather-desc" id="weatherDesc">Încărcare informații meteo...</div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" id="currentLocation">
+                            Se obține locația...
+                        </div>
+                        <div style="font-size: 12px; opacity: 0.9;">
+                            Ultimul update: <span id="locationLastUpdate">--:--</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 12px; opacity: 0.8;">Viteză curentă</div>
+                            <div style="font-size: 18px; font-weight: bold;" id="currentSpeed">0 km/h</div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="shareCurrentLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                📤 Trimite
+                            </button>
+                            <button onclick="openLocationInMaps()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                🗺️ Maps
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card-ul meteo poate rămâne la fel, acum va fi actualizat automat cu locația reală -->
+                <div class="weather-card" style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: #2c3e50;" id="weatherTemp">--°C</div>
+                            <div style="font-size: 14px; color: #7f8c8d;" id="weatherDesc">Se încarcă...</div>
+                        </div>
+                        <div style="font-size: 36px;">🌤️</div>
+                    </div>
                 </div>
             </div>
 
