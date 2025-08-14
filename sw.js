@@ -1,5 +1,5 @@
 // Service Worker for Driver Support App
-const CACHE_NAME = 'driver-support-v1.0.2';
+const CACHE_NAME = 'driver-support-v1.0.5';
 const STATIC_CACHE_NAME = 'driver-support-static-v1.0.2';
 const DYNAMIC_CACHE_NAME = 'driver-support-dynamic-v1.0.2';
 
