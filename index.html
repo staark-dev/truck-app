@@ -115,24 +115,21 @@
                     <div class="control-buttons" id="controlButtons">
                         <div class="control-grid">
                             <button class="control-btn" id="btnDriving" onclick="setActivity('driving', 'Condus', this)">
-                                Condus
+                                🚗 Condus
                             </button>
-                            
                             <button class="control-btn" id="btnBreak" onclick="setActivity('break', 'Pauză', this)">
-                                Pauză
+                                ☕ Pauză
                             </button>
-                            
-                            <button class="control-btn" id="btnWork" onclick="setActivity('work', 'Muncă', this)">
-                                Muncă
+                            <button class="control-btn" id="btnWork" onclick="setActivity('work', 'Lucru', this)">
+                                🔧 Lucru
                             </button>
-                            
-                            <button class="control-btn" id="btnOther" onclick="setActivity('other', 'Alte activități', this)">
-                                Alte activități
+                            <button class="control-btn" id="btnOther" onclick="setActivity('other', 'Altele', this)">
+                                📋 Altele
                             </button>
-                            
-                            <button class="control-btn btn-end" onclick="endProgram()">
-                                Termină Program
+                            <button class="control-btn" onclick="endProgram()" style="background: #e74c3c; border-color: #e74c3c;">
+                                ⏹️ Termină Program
                             </button>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -218,6 +215,8 @@
                 </div>
             </div>
 
+            
+            
             <!-- Additional pages will be loaded dynamically -->
             <div class="page" id="pageGPS">
                 <div class="page-content">
@@ -233,54 +232,297 @@
                 </div>
             </div>
 
-            <div class="page" id="pageSettings">
-                <div class="page-content">
-                    <h2 class="page-title">Setări</h2>
-                    
-                    <!-- Driver Info -->
-                    <div class="card">
-                        <h3 class="card-title">Informații Șofer</h3>
-                        <div class="setting-item">
-                            <label class="setting-label">Numele șoferului:</label>
-                            <input type="text" class="setting-input" id="settingDriverName" value="Alexandru Popescu" />
+            <!-- Fuel Page -->
+            <div class="page" id="pageFuel">
+                <h2 style="color: #2c3e50; margin-bottom: 20px;">⛽ Management Combustibil</h2>
+                
+                <!-- Status Combustibil -->
+                <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px; font-size: 20px;">⛽ Status Combustibil</h3>
+                    <div style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 15px;">
+                        76% • 380L
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold;">8.2L</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Consum/100km</div>
                         </div>
-                        <div class="setting-item">
-                            <label class="setting-label">Numărul camionului:</label>
-                            <input type="text" class="setting-input" id="settingTruckNumber" value="SE-4521" />
+                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold;">520km</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Autonomie</div>
                         </div>
                     </div>
-
-                    <!-- App Settings -->
-                    <div class="card">
-                        <h3 class="card-title">Setări Aplicație</h3>
-                        <div class="setting-item">
-                            <label class="setting-label">Mod întunecat:</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" />
-                                <label for="darkModeToggle" class="toggle-label"></label>
-                            </div>
+                </div>
+                
+                <!-- Adaugă Alimentare -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">➕ Adaugă Alimentare</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <div>
+                            <label>Cantitate (L):</label>
+                            <input type="number" id="fuelAmount" placeholder="Ex: 50">
                         </div>
-                        <div class="setting-item">
-                            <label class="setting-label">Control vocal:</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="voiceControlToggle" checked />
-                                <label for="voiceControlToggle" class="toggle-label"></label>
-                            </div>
+                        <div>
+                            <label>Preț/L (€):</label>
+                            <input type="number" id="fuelPrice" step="0.01" placeholder="Ex: 1.45">
                         </div>
-                        <div class="setting-item">
-                            <label class="setting-label">Alerte sonore:</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="soundAlertsToggle" />
-                                <label for="soundAlertsToggle" class="toggle-label"></label>
-                            </div>
+                        <div>
+                            <label>Stația (opțional):</label>
+                            <input type="text" id="fuelStation" placeholder="Ex: Shell, OMV, Petrom">
                         </div>
-                    </div>
-
-                    <!-- Save Button -->
-                    <div style="margin-top: 20px;">
-                        <button class="control-btn" onclick="saveSettings()" style="background: #27ae60; color: white; border-color: #27ae60; width: 100%;">
-                            💾 Salvează Setări
+                        <button onclick="saveFuelData()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500;">
+                            💾 Salvează Alimentare
                         </button>
+                    </div>
+                </div>
+                
+                <!-- Istoric Alimentări -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Istoric Alimentări</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+                        <div>
+                            <div style="font-weight: bold; color: #2c3e50;">Shell</div>
+                            <div style="font-size: 12px; color: #666;">Azi, 14:30</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #2c3e50;">45L</div>
+                            <div style="font-size: 12px; color: #666;">€66.60</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+                        <div>
+                            <div style="font-weight: bold; color: #2c3e50;">OMV</div>
+                            <div style="font-size: 12px; color: #666;">Ieri, 09:15</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #2c3e50;">52L</div>
+                            <div style="font-size: 12px; color: #666;">€73.84</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: bold; color: #2c3e50;">Petrom</div>
+                            <div style="font-size: 12px; color: #666;">18 Dec, 16:45</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #2c3e50;">48L</div>
+                            <div style="font-size: 12px; color: #666;">€69.60</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statistici -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📊 Statistici săptămâna aceasta</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px solid #3498db;">
+                            <div style="font-size: 24px; font-weight: bold; color: #3498db;">247L</div>
+                            <div style="font-size: 12px; color: #666;">Total alimentat</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e74c3c;">
+                            <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">€358</div>
+                            <div style="font-size: 12px; color: #666;">Cost total</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.6;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>📈 Consum mediu:</span>
+                            <span style="font-weight: bold;">8.2L/100km</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>💰 Preț mediu:</span>
+                            <span style="font-weight: bold;">€1.45/L</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>🛣️ Distanță parcursă:</span>
+                            <span style="font-weight: bold;">3,012 km</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div class="page" id="pageReports">
+                <h2 style="color: #2c3e50; margin-bottom: 20px;">📊 Rapoarte și Istoric</h2>
+                
+                <!-- Program Curent -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">🚛 Program Curent</h3>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #f44336;"></div>
+                            <span style="font-weight: bold;">Oprit</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                            <div>
+                                <div style="color: #666; margin-bottom: 5px;">Început la:</div>
+                                <div style="font-weight: bold;" id="reportStartTime">--:--</div>
+                            </div>
+                            <div>
+                                <div style="color: #666; margin-bottom: 5px;">Activitate curentă:</div>
+                                <div style="font-weight: bold;" id="reportCurrentActivity">Nicio activitate</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                        <div style="font-weight: bold; margin-bottom: 10px;">⏱️ Timp astăzi</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>🚗 Conducere:</span>
+                                <span style="font-weight: bold;" id="reportDriving">00:00:00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>☕ Pauze:</span>
+                                <span style="font-weight: bold;" id="reportBreaks">00:00:00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>🔧 Lucru:</span>
+                                <span style="font-weight: bold;" id="reportWork">00:00:00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>📋 Altele:</span>
+                                <span style="font-weight: bold;" id="reportOther">00:00:00</span>
+                            </div>
+                        </div>
+                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>⏱️ Total:</span>
+                            <span id="reportTotal">00:00:00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statistici Astăzi -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📈 Statistici astăzi</h3>
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div style="font-size: 32px; font-weight: bold;" id="statsTotalHours">0.0h</div>
+                            <div style="opacity: 0.9;">Total astăzi</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
+                            <div>
+                                <div style="font-size: 18px; font-weight: bold;" id="statsDrivingPercent">0%</div>
+                                <div style="font-size: 12px; opacity: 0.9;">Conducere</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 18px; font-weight: bold;" id="statsDrivingHours">0.0h</div>
+                                <div style="font-size: 12px; opacity: 0.9;">La volan</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 18px; font-weight: bold;" id="statsBreakHours">0.0h</div>
+                                <div style="font-size: 12px; opacity: 0.9;">Pauze</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Conformitate Legală -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">⚖️ Conformitate legală</h3>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60;"></div>
+                            <span style="font-weight: bold; color: #27ae60;">Conformitate bună</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px;">
+                                <span>Timp conducere astăzi:</span>
+                                <span style="font-weight: bold;">0.0h / 9h</span>
+                            </div>
+                            <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
+                                <div style="background: #27ae60; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 14px; color: #666;">
+                            <div>⏰ Timp rămas: <strong>9.0h</strong></div>
+                            <div>🚛 Pauză obligatorie la fiecare 4.5h</div>
+                            <div>📅 Odihnă săptămânală: 45h consecutiv</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Export Rapoarte -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📤 Exportă rapoarte</h3>
+                    <div style="display: grid; gap: 10px;">
+                        <button onclick="exportToPDF()" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            📄 Export PDF zilnic
+                        </button>
+                        <button onclick="exportToExcel()" style="background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            📊 Export Excel săptămânal
+                        </button>
+                        <button onclick="sendEmail()" style="background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            📧 Trimite raport email
+                        </button>
+                        <button onclick="printReport()" style="background: #9b59b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            🖨️ Printează raport
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div class="page" id="pageSettings">
+                <h2 style="color: #2c3e50; margin-bottom: 20px;">⚙️ Setări</h2>
+                
+                <!-- Informații Șofer -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">👤 Informații șofer</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <div>
+                            <label>Nume șofer:</label>
+                            <input type="text" id="settingDriverName" placeholder="Introduceți numele">
+                        </div>
+                        <div>
+                            <label>Număr camion:</label>
+                            <input type="text" id="settingTruckNumber" placeholder="Ex: 001">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preferințe Aplicație -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">🎛️ Preferințe aplicație</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>🌙 Mod întunecat</span>
+                            <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>🎤 Control vocal</span>
+                            <input type="checkbox" id="voiceControlToggle">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>🔊 Alerte sonore</span>
+                            <input type="checkbox" id="soundAlertsToggle" checked>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Salvează Setări -->
+                <div class="card">
+                    <button onclick="saveSettings()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; width: 100%;">
+                        💾 Salvează setările
+                    </button>
+                </div>
+                
+                <!-- Informații Aplicație -->
+                <div class="card">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">ℹ️ Despre aplicație</h3>
+                    <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                        <div><strong>Driver Support Pro</strong></div>
+                        <div>Versiunea: 1.0.0</div>
+                        <div>Aplicație PWA pentru șoferi profesioniști</div>
+                        <div style="margin-top: 10px;">
+                            <div>📱 Funcții offline disponibile</div>
+                            <div>🗺️ GPS și navigație</div>
+                            <div>⛽ Management combustibil</div>
+                            <div>📊 Rapoarte automate</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -336,1423 +578,1426 @@
 
 <!-- App după clase -->
 <script src="js/app.js"></script>
-    <script>
-        // Register service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('sw.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-
-        // PWA Install prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            showInstallBanner();
+    
+<script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('sw.js')
+                .then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                })
+                .catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
         });
+    }
 
-        function showInstallBanner() {
-            document.getElementById('installBanner').classList.add('show');
-        }
+    // PWA Install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallBanner();
+    });
 
-        function hideInstallBanner() {
-            document.getElementById('installBanner').classList.remove('show');
-        }
+    function showInstallBanner() {
+        document.getElementById('installBanner').classList.add('show');
+    }
 
-        document.getElementById('installBtn').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    hideInstallBanner();
-                }
-                deferredPrompt = null;
+    function hideInstallBanner() {
+        document.getElementById('installBanner').classList.remove('show');
+    }
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                hideInstallBanner();
             }
-        });
+            deferredPrompt = null;
+        }
+    });
 
-        // Initialize app when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-        });
-    </script>
-    <script>
-        // Emergency loading fix
-        setTimeout(function() {
-            const loading = document.getElementById('loadingScreen');
-            if (loading && loading.style.display !== 'none') {
-                loading.style.display = 'none';
-                console.log('🔧 Auto-fixed loading screen');
-            }
-        }, 3000);
+    // Initialize app when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeApp();
+    });
+</script>
+    
+<script>
+    // Emergency loading fix
+    setTimeout(function() {
+        const loading = document.getElementById('loadingScreen');
+        if (loading && loading.style.display !== 'none') {
+            loading.style.display = 'none';
+            console.log('🔧 Auto-fixed loading screen');
+        }
+    }, 3000);
 
-        /*(function(){
-          const box = document.createElement('pre');
-          box.id = 'debugOverlay';
-          box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;margin:0;background:#111;color:#0f0;padding:8px;font:12px/1.4 monospace;z-index:99999;opacity:.95;display:none';
-          document.body.appendChild(box);
-          const show = (msg)=>{ box.style.display='block'; box.textContent += msg + '\n'; };
-        
-          // Catch runtime errors
-          window.addEventListener('error', e => show('❌ ' + (e.error?.stack || e.message)));
-        
-          // Catch unhandled promise rejections
-          window.addEventListener('unhandledrejection', e => show('⚠️ Promise: ' + (e.reason?.stack || e.reason)));
-        
-          // Simple console mirror for quick checks (toggle by long-press)
-          let pressTimer;
-          window.addEventListener('touchstart', ()=> pressTimer = setTimeout(()=> box.style.display = (box.style.display==='none'?'block':'none'), 700));
-          window.addEventListener('touchend', ()=> clearTimeout(pressTimer));
-          console.log = ((orig)=>function(){ show('📝 ' + Array.from(arguments).map(a=> typeof a==='object'?JSON.stringify(a):String(a)).join(' ')); orig.apply(console, arguments); })(console.log);
-        })();*/
-    </script>
+    /*(function(){
+      const box = document.createElement('pre');
+      box.id = 'debugOverlay';
+      box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;margin:0;background:#111;color:#0f0;padding:8px;font:12px/1.4 monospace;z-index:99999;opacity:.95;display:none';
+      document.body.appendChild(box);
+      const show = (msg)=>{ box.style.display='block'; box.textContent += msg + '\n'; };
+    
+      // Catch runtime errors
+      window.addEventListener('error', e => show('❌ ' + (e.error?.stack || e.message)));
+    
+      // Catch unhandled promise rejections
+      window.addEventListener('unhandledrejection', e => show('⚠️ Promise: ' + (e.reason?.stack || e.reason)));
+    
+      // Simple console mirror for quick checks (toggle by long-press)
+      let pressTimer;
+      window.addEventListener('touchstart', ()=> pressTimer = setTimeout(()=> box.style.display = (box.style.display==='none'?'block':'none'), 700));
+      window.addEventListener('touchend', ()=> clearTimeout(pressTimer));
+      console.log = ((orig)=>function(){ show('📝 ' + Array.from(arguments).map(a=> typeof a==='object'?JSON.stringify(a):String(a)).join(' ')); orig.apply(console, arguments); })(console.log);
+    })();*/
+</script>
 
-    <style>
-    /* Additional styles for loading screen and popups */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        color: #333;
-        transition: all 0.3s ease;
-        -webkit-user-select: none;
-        user-select: none;
-    }
-    
-    body.dark-mode {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: #ecf0f1;
-    }
-    
+<style>
+/* Additional styles for loading screen and popups */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    transition: all 0.3s ease;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+body.dark-mode {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: #ecf0f1;
+}
+
+.app-container {
+    max-width: 400px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.dark-mode .app-container {
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.dark-mode .header {
+    background: linear-gradient(135deg, #1a252f, #2c3e50);
+}
+
+.driver-info {
+    position: relative;
+    z-index: 1;
+}
+
+.driver-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.truck-number {
+    font-size: 14px;
+    opacity: 0.9;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 15px;
+    display: inline-block;
+}
+
+.status-indicators {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.status-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-gps { background: #27ae60; }
+.status-offline { background: #95a5a6; }
+.status-online { background: #27ae60; }
+.status-alert { background: #e74c3c; }
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Voice Control Button */
+.voice-control {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.voice-control:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+.voice-control.listening {
+    background: #e74c3c;
+    animation: pulse-voice 1s infinite;
+}
+
+@keyframes pulse-voice {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Alert Panel */
+.alert-panel {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 360px;
+    background: #e74c3c;
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: none;
+    cursor: pointer;
+}
+
+.alert-panel.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { transform: translateX(-50%) translateY(-100%); }
+    to { transform: translateX(-50%) translateY(0); }
+}
+
+.alert-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.alert-message {
+    font-size: 14px;
+}
+
+/* Control Buttons */
+.controls {
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.dark-mode .controls {
+    background: #2c3e50;
+}
+
+.status-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid #3498db;
+    display: none;
+}
+
+.dark-mode .status-card {
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+.status-card.show {
+    display: block;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.status-item:last-child {
+    margin-bottom: 0;
+}
+
+.status-label {
+    font-weight: 500;
+    color: #7f8c8d;
+}
+
+.dark-mode .status-label {
+    color: #bdc3c7;
+}
+
+.status-value {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.dark-mode .status-value {
+    color: #ecf0f1;
+}
+
+.control-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.control-buttons {
+    display: none;
+}
+
+.control-buttons.show {
+    display: block;
+}
+
+.control-btn {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    background: white;
+    color: #495057;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dark-mode .control-btn {
+    background: #34495e;
+    color: #ecf0f1;
+    border-color: #5d6d7e;
+}
+
+.control-btn:hover, .control-btn:active {
+    border-color: #3498db;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dark-mode .control-btn:hover {
+    background: #4a6074;
+}
+
+.control-btn.active {
+    border-color: #3498db;
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.dark-mode .control-btn.active {
+    background: #2980b9;
+    color: white;
+}
+
+.btn-start {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+    grid-column: 1 / -1;
+}
+
+.btn-start:hover {
+    background: #2980b9;
+    border-color: #2980b9;
+    color: white;
+}
+
+.btn-end {
+    background: #e74c3c;
+    color: white;
+    border-color: #e74c3c;
+    grid-column: 1 / -1;
+}
+
+.btn-end:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    color: white;
+}
+
+/* Pages */
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+.page-content {
+    padding: 20px;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.dark-mode .page-title {
+    color: #ecf0f1;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dark-mode .card {
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 8px;
+}
+
+.dark-mode .card-title {
+    color: #ecf0f1;
+    border-color: #5d6d7e;
+}
+
+/* Progress Rings */
+.progress-ring-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.progress-ring {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.progress-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(#3498db 0deg, #ecf0f1 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-inner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.dark-mode .progress-inner {
+    background: #34495e;
+}
+
+/* Weather Widget */
+.weather-widget {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.weather-temp {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.weather-desc {
+    opacity: 0.9;
+}
+
+/* Settings */
+.setting-item {
+    margin-bottom: 20px;
+}
+
+.setting-label {
+    display: block;
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.dark-mode .setting-label {
+    color: #ecf0f1;
+}
+
+.setting-input, .setting-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.dark-mode .setting-input, .dark-mode .setting-select {
+    background: #2c3e50;
+    color: #ecf0f1;
+    border-color: #5d6d7e;
+}
+
+.setting-input:focus, .setting-select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: 0.4s;
+}
+
+.toggle-label:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+input:checked + .toggle-label {
+    background-color: #3498db;
+}
+
+input:checked + .toggle-label:before {
+    transform: translateX(26px);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-top: 1px solid #ecf0f1;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+}
+
+.dark-mode .bottom-nav {
+    background: #34495e;
+    border-color: #5d6d7e;
+}
+
+.nav-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.nav-item {
+    padding: 12px 8px;
+    text-align: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #7f8c8d;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dark-mode .nav-item {
+    color: #bdc3c7;
+}
+
+.nav-item.active {
+    color: #3498db;
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.nav-item:hover {
+    background: rgba(52, 152, 219, 0.05);
+}
+
+.nav-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.nav-label {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* Content spacing for bottom nav */
+.content {
+    padding-bottom: 80px;
+}
+
+/* Loading Spinner */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Install Banner */
+.install-banner {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    padding: 15px 20px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px;
+    z-index: 1001;
+}
+
+.install-banner.show {
+    display: flex;
+}
+
+.install-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+.install-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.install-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
     .app-container {
-        max-width: 400px;
-        margin: 0 auto;
-        background: white;
-        min-height: 100vh;
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    .dark-mode .app-container {
-        background: #34495e;
-        color: #ecf0f1;
-    }
-    
-    /* Header */
-    .header {
-        background: linear-gradient(135deg, #2c3e50, #3498db);
-        color: white;
-        padding: 20px;
-        text-align: center;
-        position: relative;
-    }
-    
-    .dark-mode .header {
-        background: linear-gradient(135deg, #1a252f, #2c3e50);
-    }
-    
-    .driver-info {
-        position: relative;
-        z-index: 1;
-    }
-    
-    .driver-name {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    
-    .truck-number {
-        font-size: 14px;
-        opacity: 0.9;
-        background: rgba(255,255,255,0.2);
-        padding: 4px 12px;
-        border-radius: 15px;
-        display: inline-block;
-    }
-    
-    .status-indicators {
-        margin-top: 15px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-    
-    .status-badge {
-        background: rgba(255,255,255,0.2);
-        padding: 8px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-    }
-    
-    .status-gps { background: #27ae60; }
-    .status-offline { background: #95a5a6; }
-    .status-online { background: #27ae60; }
-    .status-alert { background: #e74c3c; }
-    
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-    
-    /* Voice Control Button */
-    .voice-control {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.2);
-        border: none;
-        color: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 18px;
-    }
-    
-    .voice-control:hover {
-        background: rgba(255,255,255,0.3);
-        transform: scale(1.1);
-    }
-    
-    .voice-control.listening {
-        background: #e74c3c;
-        animation: pulse-voice 1s infinite;
-    }
-    
-    @keyframes pulse-voice {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-    
-    /* Alert Panel */
-    .alert-panel {
-        position: fixed;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
-        max-width: 360px;
-        background: #e74c3c;
-        color: white;
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        z-index: 1000;
-        display: none;
-        cursor: pointer;
-    }
-    
-    .alert-panel.show {
-        display: block;
-        animation: slideDown 0.3s ease;
-    }
-    
-    @keyframes slideDown {
-        from { transform: translateX(-50%) translateY(-100%); }
-        to { transform: translateX(-50%) translateY(0); }
-    }
-    
-    .alert-title {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    
-    .alert-message {
-        font-size: 14px;
-    }
-    
-    /* Control Buttons */
-    .controls {
-        padding: 20px;
-        background: #f8f9fa;
-    }
-    
-    .dark-mode .controls {
-        background: #2c3e50;
-    }
-    
-    .status-card {
-        background: white;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border-left: 4px solid #3498db;
-        display: none;
-    }
-    
-    .dark-mode .status-card {
-        background: #34495e;
-        color: #ecf0f1;
-    }
-    
-    .status-card.show {
-        display: block;
-    }
-    
-    .status-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-    }
-    
-    .status-item:last-child {
-        margin-bottom: 0;
-    }
-    
-    .status-label {
-        font-weight: 500;
-        color: #7f8c8d;
-    }
-    
-    .dark-mode .status-label {
-        color: #bdc3c7;
-    }
-    
-    .status-value {
-        font-weight: bold;
-        color: #2c3e50;
-    }
-    
-    .dark-mode .status-value {
-        color: #ecf0f1;
-    }
-    
-    .control-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 15px;
-    }
-    
-    .control-buttons {
-        display: none;
-    }
-    
-    .control-buttons.show {
-        display: block;
+        max-width: 100%;
     }
     
     .control-btn {
-        padding: 12px 16px;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 50px;
-        background: white;
-        color: #495057;
-        -webkit-tap-highlight-color: transparent;
-    }
-    
-    .dark-mode .control-btn {
-        background: #34495e;
-        color: #ecf0f1;
-        border-color: #5d6d7e;
-    }
-    
-    .control-btn:hover, .control-btn:active {
-        border-color: #3498db;
-        background: #f8f9fa;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    
-    .dark-mode .control-btn:hover {
-        background: #4a6074;
-    }
-    
-    .control-btn.active {
-        border-color: #3498db;
-        background: #e3f2fd;
-        color: #1976d2;
-    }
-    
-    .dark-mode .control-btn.active {
-        background: #2980b9;
-        color: white;
-    }
-    
-    .btn-start {
-        background: #3498db;
-        color: white;
-        border-color: #3498db;
-        grid-column: 1 / -1;
-    }
-    
-    .btn-start:hover {
-        background: #2980b9;
-        border-color: #2980b9;
-        color: white;
-    }
-    
-    .btn-end {
-        background: #e74c3c;
-        color: white;
-        border-color: #e74c3c;
-        grid-column: 1 / -1;
-    }
-    
-    .btn-end:hover {
-        background: #c0392b;
-        border-color: #c0392b;
-        color: white;
-    }
-    
-    /* Pages */
-    .page {
-        display: none;
-    }
-    
-    .page.active {
-        display: block;
-    }
-    
-    .page-content {
-        padding: 20px;
-    }
-    
-    .page-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #2c3e50;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .dark-mode .page-title {
-        color: #ecf0f1;
-    }
-    
-    /* Cards */
-    .card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .dark-mode .card {
-        background: #34495e;
-        color: #ecf0f1;
-    }
-    
-    .card-title {
-        font-size: 16px;
-        font-weight: bold;
-        color: #2c3e50;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #ecf0f1;
-        padding-bottom: 8px;
-    }
-    
-    .dark-mode .card-title {
-        color: #ecf0f1;
-        border-color: #5d6d7e;
-    }
-    
-    /* Progress Rings */
-    .progress-ring-container {
-        display: flex;
-        justify-content: space-around;
-        margin: 20px 0;
-    }
-    
-    .progress-ring {
-        position: relative;
-        width: 80px;
-        height: 80px;
-    }
-    
-    .progress-circle {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: conic-gradient(#3498db 0deg, #ecf0f1 0deg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .progress-inner {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        font-weight: bold;
-    }
-    
-    .dark-mode .progress-inner {
-        background: #34495e;
-    }
-    
-    /* Weather Widget */
-    .weather-widget {
-        background: linear-gradient(135deg, #74b9ff, #0984e3);
-        color: white;
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .weather-temp {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    
-    .weather-desc {
-        opacity: 0.9;
-    }
-    
-    /* Settings */
-    .setting-item {
-        margin-bottom: 20px;
-    }
-    
-    .setting-label {
-        display: block;
-        font-weight: 500;
-        color: #2c3e50;
-        margin-bottom: 8px;
-    }
-    
-    .dark-mode .setting-label {
-        color: #ecf0f1;
-    }
-    
-    .setting-input, .setting-select {
-        width: 100%;
+        font-size: 13px;
         padding: 10px 12px;
-        border: 2px solid #e9ecef;
-        border-radius: 6px;
-        font-size: 14px;
-        transition: border-color 0.3s ease;
+        min-height: 45px;
     }
-    
-    .dark-mode .setting-input, .dark-mode .setting-select {
-        background: #2c3e50;
-        color: #ecf0f1;
-        border-color: #5d6d7e;
-    }
-    
-    .setting-input:focus, .setting-select:focus {
-        outline: none;
-        border-color: #3498db;
-    }
-    
-    /* Toggle Switch */
-    .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 24px;
-    }
-    
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    
-    .toggle-label {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        border-radius: 24px;
-        transition: 0.4s;
-    }
-    
-    .toggle-label:before {
-        position: absolute;
-        content: "";
-        height: 18px;
-        width: 18px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        border-radius: 50%;
-        transition: 0.4s;
-    }
-    
-    input:checked + .toggle-label {
-        background-color: #3498db;
-    }
-    
-    input:checked + .toggle-label:before {
-        transform: translateX(26px);
-    }
-    
-    /* Bottom Navigation */
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100%;
-        max-width: 400px;
-        background: white;
-        border-top: 1px solid #ecf0f1;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-    }
-    
-    .dark-mode .bottom-nav {
-        background: #34495e;
-        border-color: #5d6d7e;
-    }
-    
-    .nav-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    }
-    
-    .nav-item {
-        padding: 12px 8px;
-        text-align: center;
-        border: none;
-        background: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        color: #7f8c8d;
-        -webkit-tap-highlight-color: transparent;
-    }
-    
-    .dark-mode .nav-item {
-        color: #bdc3c7;
-    }
-    
-    .nav-item.active {
-        color: #3498db;
-        background: rgba(52, 152, 219, 0.1);
-    }
-    
-    .nav-item:hover {
-        background: rgba(52, 152, 219, 0.05);
-    }
-    
-    .nav-icon {
-        font-size: 18px;
-        margin-bottom: 4px;
-    }
-    
+
     .nav-label {
-        font-size: 10px;
-        font-weight: 500;
+        font-size: 9px;
     }
-    
-    /* Content spacing for bottom nav */
-    .content {
-        padding-bottom: 80px;
+}
+
+/* Prevent text selection */
+.no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+/* Loading Screen Styles */
+#loadingScreen {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#loadingProgress {
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { box-shadow: 0 0 5px rgba(255,255,255,0.3); }
+    to { box-shadow: 0 0 15px rgba(255,255,255,0.6); }
+}
+
+/* Permission Modal Styles */
+.permission-modal {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.permission-modal-content {
+    animation: slideUp 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
     }
-    
-    /* Loading Spinner */
-    .loading {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,.3);
-        border-radius: 50%;
-        border-top-color: #fff;
-        animation: spin 1s ease-in-out infinite;
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    /* Install Banner */
-    .install-banner {
-        background: linear-gradient(135deg, #27ae60, #2ecc71);
-        color: white;
-        padding: 15px 20px;
-        display: none;
-        align-items: center;
-        justify-content: space-between;
-        position: fixed;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100%;
-        max-width: 400px;
-        z-index: 1001;
-    }
-    
-    .install-banner.show {
-        display: flex;
-    }
-    
-    .install-text {
-        flex: 1;
-        font-size: 14px;
-    }
-    
-    .install-btn {
-        background: rgba(255,255,255,0.2);
-        border: none;
-        color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-    }
-    
-    .install-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
-        margin-left: 10px;
-    }
-    
-    /* Responsive */
-    @media (max-width: 480px) {
-        .app-container {
-            max-width: 100%;
-        }
-        
-        .control-btn {
-            font-size: 13px;
-            padding: 10px 12px;
-            min-height: 45px;
-        }
-    
-        .nav-label {
-            font-size: 9px;
-        }
-    }
-    
-    /* Prevent text selection */
-    .no-select {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-    
-    
-    /* Loading Screen Styles */
-    #loadingScreen {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        animation: fadeIn 0.5s ease-in;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    #loadingProgress {
-        animation: pulse 1.5s ease-in-out infinite alternate;
-    }
-    
-    @keyframes pulse {
-        from { box-shadow: 0 0 5px rgba(255,255,255,0.3); }
-        to { box-shadow: 0 0 15px rgba(255,255,255,0.6); }
-    }
-    
-    /* Permission Modal Styles */
-    .permission-modal {
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-    }
-    
+}
+
+.permission-button {
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.permission-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.permission-button:active {
+    transform: translateY(0);
+}
+
+.permission-allow {
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+}
+
+.permission-allow:hover {
+    background: linear-gradient(135deg, #2980b9, #2471a3) !important;
+}
+
+.permission-deny {
+    transition: all 0.2s ease;
+}
+
+.permission-deny:hover {
+    background: #ecf0f1 !important;
+    color: #2c3e50 !important;
+}
+
+/* Toast notification enhancements */
+#toast {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.8) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Enhanced loading animations for better UX */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* GPS page specific loading spinner */
+.gps-loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(102, 126, 234, 0.3);
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+/* Enhanced button styles for better feedback */
+.control-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+    position: relative;
+}
+
+.control-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s ease infinite;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* GPS live indicator */
+.gps-live-indicator {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Dark mode enhancements for popups */
+.dark-mode .permission-modal-content {
+    background: #2c3e50 !important;
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .permission-button {
+    border-color: #34495e !important;
+}
+
+.dark-mode .permission-deny {
+    background: #34495e !important;
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .permission-deny:hover {
+    background: #4a6278 !important;
+}
+
+/* Enhanced report cards */
+.report-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.dark-mode .report-card {
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+/* Progress bars for compliance */
+.compliance-bar {
+    background: #e0e0e0;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.compliance-progress {
+    height: 100%;
+    transition: width 0.5s ease, background-color 0.3s ease;
+    border-radius: 10px;
+}
+
+.compliance-progress.safe {
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.compliance-progress.warning {
+    background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.compliance-progress.danger {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+/* Responsive enhancements */
+@media (max-width: 480px) {
     .permission-modal-content {
-        animation: slideUp 0.3s ease-out;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        margin: 10px !important;
+        padding: 20px !important;
     }
     
-    @keyframes slideUp {
-        from {
-            transform: translateY(30px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
+    #loadingScreen h2 {
+        font-size: 24px;
+    }
+    
+    #loadingScreen div[style*="font-size: 48px"] {
+        font-size: 36px !important;
+    }
+    
+    .loading-spinner {
+        width: 30px;
+        height: 30px;
+        border-width: 3px;
+    }
+}
+
+/* Accessibility improvements */
+.permission-button:focus {
+    outline: 3px solid #3498db;
+    outline-offset: 2px;
+}
+
+.permission-modal-content h3 {
+    line-height: 1.4;
+}
+
+.permission-modal-content p {
+    line-height: 1.6;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .permission-modal-content {
+        border: 2px solid #000 !important;
     }
     
     .permission-button {
-        transition: all 0.2s ease;
-        font-family: inherit;
+        border-width: 3px !important;
     }
     
-    .permission-button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    
-    .permission-button:active {
-        transform: translateY(0);
-    }
-    
-    .permission-allow {
-        background: linear-gradient(135deg, #3498db, #2980b9) !important;
-    }
-    
-    .permission-allow:hover {
-        background: linear-gradient(135deg, #2980b9, #2471a3) !important;
-    }
-    
-    .permission-deny {
-        transition: all 0.2s ease;
-    }
-    
-    .permission-deny:hover {
-        background: #ecf0f1 !important;
-        color: #2c3e50 !important;
-    }
-    
-    /* Toast notification enhancements */
-    #toast {
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        background: rgba(0,0,0,0.8) !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    /* Enhanced loading animations for better UX */
     .loading-spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid rgba(255,255,255,0.3);
-        border-top: 4px solid white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
+        border-width: 4px !important;
     }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* GPS page specific loading spinner */
-    .gps-loading-spinner {
-        width: 30px;
-        height: 30px;
-        border: 3px solid rgba(102, 126, 234, 0.3);
-        border-top: 3px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        display: inline-block;
-        margin-right: 10px;
-    }
-    
-    /* Enhanced button styles for better feedback */
-    .control-btn.loading {
-        pointer-events: none;
-        opacity: 0.7;
-        position: relative;
-    }
-    
-    .control-btn.loading::after {
-        content: '';
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        margin: auto;
-        border: 2px solid transparent;
-        border-top-color: currentColor;
-        border-radius: 50%;
-        animation: spin 1s ease infinite;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-    
-    /* GPS live indicator */
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    #loadingProgress,
+    .loading-spinner,
+    .gps-loading-spinner,
+    .control-btn.loading::after,
     .gps-live-indicator {
-        background: rgba(255,255,255,0.2);
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 12px;
-        animation: pulse-live 2s ease-in-out infinite;
+        animation: none;
     }
     
-    @keyframes pulse-live {
-        0%, 100% { opacity: 0.8; }
-        50% { opacity: 1; }
+    .permission-modal-content {
+        animation: none;
     }
     
-    /* Dark mode enhancements for popups */
-    .dark-mode .permission-modal-content {
-        background: #2c3e50 !important;
-        color: #ecf0f1 !important;
-    }
-    
-    .dark-mode .permission-button {
-        border-color: #34495e !important;
-    }
-    
-    .dark-mode .permission-deny {
-        background: #34495e !important;
-        color: #ecf0f1 !important;
-    }
-    
-    .dark-mode .permission-deny:hover {
-        background: #4a6278 !important;
-    }
-    
-    /* Enhanced report cards */
+    .permission-button,
     .report-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: none;
+    }
+}
+
+/* Print styles for reports */
+@media print {
+    .loading-spinner,
+    .gps-loading-spinner,
+    .permission-modal,
+    #loadingScreen {
+        display: none !important;
     }
     
-    .report-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    .report-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
     }
-    
-    .dark-mode .report-card {
-        background: #34495e;
-        color: #ecf0f1;
-    }
-    
-    /* Progress bars for compliance */
-    .compliance-bar {
-        background: #e0e0e0;
-        border-radius: 10px;
-        height: 8px;
-        overflow: hidden;
-        margin: 10px 0;
-    }
-    
-    .compliance-progress {
-        height: 100%;
-        transition: width 0.5s ease, background-color 0.3s ease;
-        border-radius: 10px;
-    }
-    
-    .compliance-progress.safe {
-        background: linear-gradient(90deg, #27ae60, #2ecc71);
-    }
-    
-    .compliance-progress.warning {
-        background: linear-gradient(90deg, #f39c12, #e67e22);
-    }
-    
-    .compliance-progress.danger {
-        background: linear-gradient(90deg, #e74c3c, #c0392b);
-    }
-    
-    /* Responsive enhancements */
-    @media (max-width: 480px) {
-        .permission-modal-content {
-            margin: 10px !important;
-            padding: 20px !important;
-        }
-        
-        #loadingScreen h2 {
-            font-size: 24px;
-        }
-        
-        #loadingScreen div[style*="font-size: 48px"] {
-            font-size: 36px !important;
-        }
-        
-        .loading-spinner {
-            width: 30px;
-            height: 30px;
-            border-width: 3px;
-        }
-    }
-    
-    /* Accessibility improvements */
-    .permission-button:focus {
-        outline: 3px solid #3498db;
-        outline-offset: 2px;
-    }
-    
-    .permission-modal-content h3 {
-        line-height: 1.4;
-    }
-    
-    .permission-modal-content p {
-        line-height: 1.6;
-    }
-    
-    /* High contrast mode support */
-    @media (prefers-contrast: high) {
-        .permission-modal-content {
-            border: 2px solid #000 !important;
-        }
-        
-        .permission-button {
-            border-width: 3px !important;
-        }
-        
-        .loading-spinner {
-            border-width: 4px !important;
-        }
-    }
-    
-    /* Reduced motion support */
-    @media (prefers-reduced-motion: reduce) {
-        #loadingProgress,
-        .loading-spinner,
-        .gps-loading-spinner,
-        .control-btn.loading::after,
-        .gps-live-indicator {
-            animation: none;
-        }
-        
-        .permission-modal-content {
-            animation: none;
-        }
-        
-        .permission-button,
-        .report-card {
-            transition: none;
-        }
-    }
-    
-    /* Print styles for reports */
-    @media print {
-        .loading-spinner,
-        .gps-loading-spinner,
-        .permission-modal,
-        #loadingScreen {
-            display: none !important;
-        }
-        
-        .report-card {
-            break-inside: avoid;
-            box-shadow: none;
-            border: 1px solid #ddd;
-        }
-    }
-    
+}
+
+.location-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.location-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.location-card button {
+    transition: all 0.2s ease;
+}
+
+.location-card button:hover {
+    background: rgba(255,255,255,0.3) !important;
+    transform: scale(1.05);
+}
+
+.location-card button:active {
+    transform: scale(0.95);
+}
+
+.weather-card {
+    transition: all 0.2s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.weather-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+/* Dark mode support */
+.dark-mode .weather-card {
+    background: #34495e !important;
+    border-color: #4a6278 !important;
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .weather-card #weatherTemp {
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .weather-card #weatherDesc {
+    color: #bdc3c7 !important;
+}
+
+/* Loading animation for location update */
+.location-updating .location-card {
+    opacity: 0.8;
+}
+
+.location-updating .location-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: loading-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
     .location-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        padding: 15px;
     }
     
-    .location-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    .location-card h3 {
+        font-size: 16px;
     }
     
     .location-card button {
-        transition: all 0.2s ease;
+        padding: 6px 10px;
+        font-size: 11px;
     }
     
-    .location-card button:hover {
-        background: rgba(255,255,255,0.3) !important;
-        transform: scale(1.05);
+    .location-card > div:last-child {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
     }
     
-    .location-card button:active {
-        transform: scale(0.95);
+    .location-card > div:last-child > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+</style>
+    
+<!-- 2. JAVASCRIPT PENTRU SAFARI PWA DETECTION -->
+<script>
+// Safari PWA detection și fix
+function fixSafariPWA() {
+    console.log('🍎 Safari PWA fixes loading...');
+    
+    // Check dacă rulează în PWA mode pe Safari
+    const isIOSPWA = window.navigator.standalone === true;
+    const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+    
+    console.log('Is iOS PWA:', isIOSPWA);
+    console.log('Is Safari:', isSafari);
+    
+    if (isSafari && !isIOSPWA) {
+        // Rulează în Safari browser, nu în PWA mode
+        showSafariInstallInstructions();
     }
     
-    .weather-card {
-        transition: all 0.2s ease;
-        border: 1px solid #e0e0e0;
-    }
+    // Fix pentru start_url problems
+    fixStartURL();
     
-    .weather-card:hover {
-        border-color: #667eea;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-    }
+    // Clear problematic cache
+    clearProblematicCache();
+}
+
+function showSafariInstallInstructions() {
+    // Afișează instrucțiuni pentru instalare PWA pe Safari
+    const showInstructions = localStorage.getItem('safari_instructions_shown');
     
-    /* Dark mode support */
-    .dark-mode .weather-card {
-        background: #34495e !important;
-        border-color: #4a6278 !important;
-        color: #ecf0f1 !important;
+    if (!showInstructions) {
+        setTimeout(() => {
+            const modal = createSafariInstructionsModal();
+            document.body.appendChild(modal);
+            localStorage.setItem('safari_instructions_shown', 'true');
+        }, 3000);
     }
-    
-    .dark-mode .weather-card #weatherTemp {
-        color: #ecf0f1 !important;
-    }
-    
-    .dark-mode .weather-card #weatherDesc {
-        color: #bdc3c7 !important;
-    }
-    
-    /* Loading animation for location update */
-    .location-updating .location-card {
-        opacity: 0.8;
-    }
-    
-    .location-updating .location-card::after {
-        content: '';
-        position: absolute;
+}
+
+function createSafariInstructionsModal() {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-        animation: loading-sweep 1.5s ease-in-out infinite;
-    }
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    `;
     
-    @keyframes loading-sweep {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-    
-    /* Responsive design */
-    @media (max-width: 480px) {
-        .location-card {
-            padding: 15px;
-        }
-        
-        .location-card h3 {
-            font-size: 16px;
-        }
-        
-        .location-card button {
-            padding: 6px 10px;
-            font-size: 11px;
-        }
-        
-        .location-card > div:last-child {
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-start;
-        }
-        
-        .location-card > div:last-child > div:last-child {
-            width: 100%;
-            justify-content: space-between;
-        }
-    }
-    </style>
-    <!-- 2. JAVASCRIPT PENTRU SAFARI PWA DETECTION -->
-    <script>
-    // Safari PWA detection și fix
-    function fixSafariPWA() {
-        console.log('🍎 Safari PWA fixes loading...');
-        
-        // Check dacă rulează în PWA mode pe Safari
-        const isIOSPWA = window.navigator.standalone === true;
-        const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
-        
-        console.log('Is iOS PWA:', isIOSPWA);
-        console.log('Is Safari:', isSafari);
-        
-        if (isSafari && !isIOSPWA) {
-            // Rulează în Safari browser, nu în PWA mode
-            showSafariInstallInstructions();
-        }
-        
-        // Fix pentru start_url problems
-        fixStartURL();
-        
-        // Clear problematic cache
-        clearProblematicCache();
-    }
-    
-    function showSafariInstallInstructions() {
-        // Afișează instrucțiuni pentru instalare PWA pe Safari
-        const showInstructions = localStorage.getItem('safari_instructions_shown');
-        
-        if (!showInstructions) {
-            setTimeout(() => {
-                const modal = createSafariInstructionsModal();
-                document.body.appendChild(modal);
-                localStorage.setItem('safari_instructions_shown', 'true');
-            }, 3000);
-        }
-    }
-    
-    function createSafariInstructionsModal() {
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        `;
-        
-        modal.innerHTML = `
-            <div style="
-                background: white;
-                border-radius: 16px;
-                padding: 30px;
-                max-width: 320px;
-                margin: 20px;
-                text-align: center;
-                position: relative;
-            ">
-                <button onclick="this.parentElement.parentElement.remove()" style="
-                    position: absolute;
-                    top: 10px;
-                    right: 15px;
-                    background: none;
-                    border: none;
-                    font-size: 24px;
-                    cursor: pointer;
-                    color: #999;
-                ">×</button>
-                
-                <div style="font-size: 48px; margin-bottom: 15px;">📱</div>
-                <h3 style="margin-bottom: 15px; color: #2c3e50;">Instalează aplicația</h3>
-                
-                <div style="text-align: left; margin-bottom: 20px; color: #666; line-height: 1.5;">
-                    <p style="margin-bottom: 10px;"><strong>Pentru a instala pe iPhone/iPad:</strong></p>
-                    <p style="margin: 5px 0;">1. Apasă butonul <strong>Share</strong> 📤</p>
-                    <p style="margin: 5px 0;">2. Selectează <strong>"Add to Home Screen"</strong></p>
-                    <p style="margin: 5px 0;">3. Apasă <strong>"Add"</strong></p>
-                </div>
-                
-                <button onclick="this.parentElement.parentElement.remove()" style="
-                    background: #007AFF;
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 500;
-                ">Am înțeles</button>
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 320px;
+            margin: 20px;
+            text-align: center;
+            position: relative;
+        ">
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: #999;
+            ">×</button>
+            
+            <div style="font-size: 48px; margin-bottom: 15px;">📱</div>
+            <h3 style="margin-bottom: 15px; color: #2c3e50;">Instalează aplicația</h3>
+            
+            <div style="text-align: left; margin-bottom: 20px; color: #666; line-height: 1.5;">
+                <p style="margin-bottom: 10px;"><strong>Pentru a instala pe iPhone/iPad:</strong></p>
+                <p style="margin: 5px 0;">1. Apasă butonul <strong>Share</strong> 📤</p>
+                <p style="margin: 5px 0;">2. Selectează <strong>"Add to Home Screen"</strong></p>
+                <p style="margin: 5px 0;">3. Apasă <strong>"Add"</strong></p>
             </div>
-        `;
-        
-        return modal;
-    }
+            
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                background: #007AFF;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 500;
+            ">Am înțeles</button>
+        </div>
+    `;
     
-    function fixStartURL() {
-        // Fix pentru start_url în manifest
-        const currentURL = window.location.href;
-        const baseURL = currentURL.split('/').slice(0, -1).join('/') + '/';
-        
-        console.log('🔧 Current URL:', currentURL);
-        console.log('🔧 Base URL:', baseURL);
-        
-        // Update manifest programmatically dacă e necesar
-        updateManifestStartURL(baseURL);
-    }
+    return modal;
+}
+
+function fixStartURL() {
+    // Fix pentru start_url în manifest
+    const currentURL = window.location.href;
+    const baseURL = currentURL.split('/').slice(0, -1).join('/') + '/';
     
-    function updateManifestStartURL(baseURL) {
-        // Fetch și update manifest.json
-        fetch('./manifest.json')
-            .then(response => response.json())
-            .then(manifest => {
-                console.log('📱 Current manifest start_url:', manifest.start_url);
+    console.log('🔧 Current URL:', currentURL);
+    console.log('🔧 Base URL:', baseURL);
+    
+    // Update manifest programmatically dacă e necesar
+    updateManifestStartURL(baseURL);
+}
+
+function updateManifestStartURL(baseURL) {
+    // Fetch și update manifest.json
+    fetch('./manifest.json')
+        .then(response => response.json())
+        .then(manifest => {
+            console.log('📱 Current manifest start_url:', manifest.start_url);
+            
+            // Verifică dacă start_url e corect
+            if (manifest.start_url !== baseURL && manifest.start_url !== './') {
+                console.warn('⚠️ Manifest start_url might be incorrect');
+                console.log('Expected:', baseURL, 'or "./"');
+                console.log('Found:', manifest.start_url);
                 
-                // Verifică dacă start_url e corect
-                if (manifest.start_url !== baseURL && manifest.start_url !== './') {
-                    console.warn('⚠️ Manifest start_url might be incorrect');
-                    console.log('Expected:', baseURL, 'or "./"');
-                    console.log('Found:', manifest.start_url);
-                    
-                    // Sugerează fix
-                    console.log('🔧 Consider updating manifest.json start_url to "./"');
-                }
-            })
-            .catch(error => {
-                console.error('❌ Could not fetch manifest:', error);
-            });
-    }
-    
-    function clearProblematicCache() {
-        // Clear cache care poate cauza probleme
-        try {
-            // Clear application cache
-            if ('applicationCache' in window) {
-                applicationCache.update();
+                // Sugerează fix
+                console.log('🔧 Consider updating manifest.json start_url to "./"');
             }
-            
-            // Clear service worker cache
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                    registrations.forEach(registration => {
-                        console.log('🔄 Updating service worker...');
-                        registration.update();
-                    });
-                });
-            }
-            
-            // Clear problematic localStorage entries
-            const keysToRemove = ['app_cache', 'manifest_cache'];
-            keysToRemove.forEach(key => {
-                localStorage.removeItem(key);
-            });
-            
-            console.log('✅ Cache cleared for PWA fix');
-            
-        } catch (error) {
-            console.warn('⚠️ Cache clear failed:', error);
-        }
-    }
-    
-    // Safari specific PWA behavior fixes
-    function handleSafariPWABehavior() {
-        // Fix pentru status bar în PWA mode
-        if (window.navigator.standalone) {
-            document.body.style.paddingTop = '20px'; // Status bar offset
-            console.log('📱 Running in PWA mode');
-        }
-        
-        // Fix pentru viewport în Safari
-        const viewport = document.querySelector('meta[name="viewport"]');
-        if (viewport) {
-            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-        }
-        
-        // Prevent Safari zoom on input focus
-        const inputs = document.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            input.style.fontSize = '16px'; // Prevent zoom
+        })
+        .catch(error => {
+            console.error('❌ Could not fetch manifest:', error);
         });
-    }
-    
-    // Manual install button pentru Safari
-    function createSafariInstallButton() {
-        const installBtn = document.createElement('button');
-        installBtn.innerHTML = '📱 Instalează App';
-        installBtn.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 12px 16px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 500;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
-        `;
-        
-        installBtn.onclick = () => {
-            showSafariInstallInstructions();
-        };
-        
-        // Show doar pe Safari și dacă nu e PWA
-        const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
-        const isIOSPWA = window.navigator.standalone === true;
-        
-        if (isSafari && !isIOSPWA) {
-            document.body.appendChild(installBtn);
-            
-            // Hide după 10 secunde
-            setTimeout(() => {
-                installBtn.style.opacity = '0.7';
-            }, 10000);
+}
+
+function clearProblematicCache() {
+    // Clear cache care poate cauza probleme
+    try {
+        // Clear application cache
+        if ('applicationCache' in window) {
+            applicationCache.update();
         }
+        
+        // Clear service worker cache
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    console.log('🔄 Updating service worker...');
+                    registration.update();
+                });
+            });
+        }
+        
+        // Clear problematic localStorage entries
+        const keysToRemove = ['app_cache', 'manifest_cache'];
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+        });
+        
+        console.log('✅ Cache cleared for PWA fix');
+        
+    } catch (error) {
+        console.warn('⚠️ Cache clear failed:', error);
+    }
+}
+
+// Safari specific PWA behavior fixes
+function handleSafariPWABehavior() {
+    // Fix pentru status bar în PWA mode
+    if (window.navigator.standalone) {
+        document.body.style.paddingTop = '20px'; // Status bar offset
+        console.log('📱 Running in PWA mode');
     }
     
-    // Initialize Safari fixes
-    document.addEventListener('DOMContentLoaded', function() {
-        fixSafariPWA();
-        handleSafariPWABehavior();
-        
-        // Delay pentru a nu interfere cu loading
-        setTimeout(() => {
-            createSafariInstallButton();
-        }, 5000);
+    // Fix pentru viewport în Safari
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+    }
+    
+    // Prevent Safari zoom on input focus
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.style.fontSize = '16px'; // Prevent zoom
     });
+}
+
+// Manual install button pentru Safari
+function createSafariInstallButton() {
+    const installBtn = document.createElement('button');
+    installBtn.innerHTML = '📱 Instalează App';
+    installBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #007AFF;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 500;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+    `;
     
-    // Export pentru debugging
-    window.safariPWA = {
-        fix: fixSafariPWA,
-        showInstructions: showSafariInstallInstructions,
-        clearCache: clearProblematicCache,
-        createInstallButton: createSafariInstallButton
+    installBtn.onclick = () => {
+        showSafariInstallInstructions();
     };
-    </script>
     
-    <!-- 3. CSS PENTRU SAFARI PWA -->
-    <style>
-    /* Safari PWA specific styles */
-    @supports (-webkit-touch-callout: none) {
-        /* Safari specific styles */
+    // Show doar pe Safari și dacă nu e PWA
+    const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+    const isIOSPWA = window.navigator.standalone === true;
+    
+    if (isSafari && !isIOSPWA) {
+        document.body.appendChild(installBtn);
+        
+        // Hide după 10 secunde
+        setTimeout(() => {
+            installBtn.style.opacity = '0.7';
+        }, 10000);
+    }
+}
+
+// Initialize Safari fixes
+document.addEventListener('DOMContentLoaded', function() {
+    fixSafariPWA();
+    handleSafariPWABehavior();
+    
+    // Delay pentru a nu interfere cu loading
+    setTimeout(() => {
+        createSafariInstallButton();
+    }, 5000);
+});
+
+// Export pentru debugging
+window.safariPWA = {
+    fix: fixSafariPWA,
+    showInstructions: showSafariInstallInstructions,
+    clearCache: clearProblematicCache,
+    createInstallButton: createSafariInstallButton
+};
+</script>
+
+<!-- 3. CSS PENTRU SAFARI PWA -->
+<style>
+/* Safari PWA specific styles */
+@supports (-webkit-touch-callout: none) {
+    /* Safari specific styles */
+    body {
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-text-size-adjust: 100%;
+    }
+    
+    /* PWA mode detection */
+    @media all and (display-mode: standalone) {
         body {
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-text-size-adjust: 100%;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* PWA mode detection */
-        @media all and (display-mode: standalone) {
-            body {
-                padding-top: env(safe-area-inset-top);
-                padding-bottom: env(safe-area-inset-bottom);
-            }
-            
-            .header {
-                padding-top: env(safe-area-inset-top);
-            }
+        .header {
+            padding-top: env(safe-area-inset-top);
         }
     }
-    
-    /* Hide Safari install button în PWA mode */
-    @media all and (display-mode: standalone) {
-        .safari-install-btn {
-            display: none !important;
-        }
+}
+
+/* Hide Safari install button în PWA mode */
+@media all and (display-mode: standalone) {
+    .safari-install-btn {
+        display: none !important;
     }
-    
-    /* Fix pentru Safari viewport */
-    .ios-fix {
-        min-height: 100vh;
-        min-height: -webkit-fill-available;
-    }
-    
-    html {
-        height: -webkit-fill-available;
-    }
-    </style>
+}
+
+/* Fix pentru Safari viewport */
+.ios-fix {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+}
+
+html {
+    height: -webkit-fill-available;
+}
+</style>
 </body>
 </html>
