@@ -17,7 +17,12 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LIGHTHOUSE_CI_BUILD_PATH: './dist'
+  BUILD_DIR: ./dist
+
+# Funcție reutilizabilă: asigură Node (preinstalat sau prin nvm)
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build-and-validate:
@@ -28,29 +33,22 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      # ===== Node.js cu fallback =====
-      - name: 📦 Setup Node.js (try 20.x)
-        id: node20
-        uses: actions/setup-node@v4
-        continue-on-error: true
-        with:
-          node-version: '20.x'
-          check-latest: true
-          cache: 'npm'
-
-      - name: 📦 Fallback to Node.js 18.x
-        id: node18
-        if: steps.node20.outcome != 'success'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.x'
-          check-latest: true
-          cache: 'npm'
-
-      - name: 🔎 Node version
+      - name: 🔧 Ensure Node.js (preinstalled or nvm 18.x)
         run: |
-          echo "Using Node:" $(node -v || echo "not found")
-          echo "NPM:" $(npm -v || echo "not found")
+          if command -v node >/dev/null 2>&1; then
+            echo "✅ Using preinstalled Node $(node -v)"
+          else
+            echo "⬇️ Installing Node via nvm (18.x)…"
+            export NVM_DIR="$HOME/.nvm"
+            # dacă nvm nu e prezent pe runner, îl instalăm
+            if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+            fi
+            source "$NVM_DIR/nvm.sh"
+            nvm install 18
+            nvm use 18
+            echo "✅ Node $(node -v) / npm $(npm -v)"
+          fi
 
       - name: 📋 Install CLI tools
         run: npm i -g uglify-js clean-css-cli
@@ -75,11 +73,13 @@ jobs:
 
       - name: 🗜️ Build (minify)
         run: |
-          mkdir -p dist
-          rsync -a --exclude 'dist' ./ dist/
-          cd dist
-          # Minify JS (evită .min.js deja minificate)
-          for js in *.js js/*.js 2>/dev/null; do
+          rm -rf "$BUILD_DIR"
+          mkdir -p "$BUILD_DIR"
+          rsync -a --exclude 'dist' ./ "$BUILD_DIR"/
+          cd "$BUILD_DIR"
+          # Minify JS (nu atinge fișierele .min.js)
+          shopt -s nullglob
+          for js in *.js js/*.js; do
             [[ -f "$js" ]] || continue
             [[ "$js" == *.min.js ]] && continue
             echo "Minifying $js"
@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pwa-build
-          path: dist/
+          path: ${{ env.BUILD_DIR }}/
           retention-days: 30
 
   security-scan:
@@ -104,7 +104,8 @@ jobs:
     needs: build-and-validate
     steps:
       - uses: actions/checkout@v4
-      - uses: returntocorp/semgrep-action@v1
+      - name: 🔒 Run Semgrep security scan
+        uses: returntocorp/semgrep-action@v1
         with:
           config: >-
             p/security-audit
@@ -126,34 +127,77 @@ jobs:
         with:
           name: pwa-build
           path: ./dist
+
       - name: 🔧 Setup Pages
         uses: actions/configure-pages@v5
+
       - name: 📁 Upload to Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
+
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
       - name: 🔍 Post-deployment health check
         run: |
           URL="${{ steps.deployment.outputs.page_url }}"
-          echo "Check: $URL"
-          curl -fsS "$URL" >/dev/null && echo "✅ Site ok" || { echo "❌ Site down"; exit 1; }
-          curl -fsS "${URL}manifest.json" >/dev/null && echo "✅ Manifest ok" || echo "❌ Manifest missing"
-          curl -fsS "${URL}sw.js" >/dev/null && echo "✅ SW ok" || echo "❌ SW missing"
+          echo "Checking $URL"
+          curl -fsS "$URL" >/dev/null && echo "✅ Site OK" || { echo "❌ Site down"; exit 1; }
+          curl -fsS "${URL}manifest.json" >/dev/null && echo "✅ Manifest OK" || echo "❌ Manifest missing"
+          curl -fsS "${URL}sw.js" >/dev/null && echo "✅ Service Worker OK" || echo "❌ SW missing"
+
+  post-deploy-audit:
+    name: 🔍 Post-Deployment Audit
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: 🔧 Ensure Node.js (preinstalled or nvm 18.x)
+        run: |
+          if command -v node >/dev/null 2>&1; then
+            echo "✅ Using Node $(node -v)"
+          else
+            export NVM_DIR="$HOME/.nvm"
+            if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+            fi
+            source "$NVM_DIR/nvm.sh"
+            nvm install 18
+            nvm use 18
+          fi
+          npm i -g @lhci/cli
+
+      - name: 🔍 Run production Lighthouse audit
+        run: |
+          URL="${{ needs.deploy.outputs.page_url }}"
+          echo "Auditing $URL"
+          # așteaptă propagarea
+          sleep 30
+          lhci collect --url="$URL" --numberOfRuns=2 --additive
+          lhci upload --target=filesystem --outputDir=./lighthouse-reports
+
+      - name: 📊 Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-lighthouse-results
+          path: ./lighthouse-reports/
+          retention-days: 30
 
   notify:
     name: 📢 Notify Results
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: [deploy, post-deploy-audit]
     if: always()
     steps:
       - name: ✅ Success
         if: needs.deploy.result == 'success'
-        run: echo "🎉 PWA deployed!"
+        run: echo "🎉 PWA deployed successfully!"
       - name: ❌ Failure
         if: needs.deploy.result != 'success'
         run: |
-          echo "❌ Deployment failed"
+          echo "❌ Deployment failed — check logs."
           exit 1
