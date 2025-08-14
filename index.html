@@ -1,1 +1,970 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Support Pro - Suedia</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3498db">
+    <meta name="description" content="Aplicație pentru managementul timpilor de lucru conform reglementărilor din Suedia">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <!-- Prevent zoom on input focus -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            transition: all 0.3s ease;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ecf0f1;
+        }
+
+        .app-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .app-container {
+            background: #34495e;
+            color: #ecf0f1;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .dark-mode .header {
+            background: linear-gradient(135deg, #1a252f, #2c3e50);
+        }
+
+        .driver-info {
+            position: relative;
+            z-index: 1;
+        }
+
+        .driver-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .truck-number {
+            font-size: 14px;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        .status-indicators {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .status-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-gps { background: #27ae60; }
+        .status-offline { background: #95a5a6; }
+        .status-online { background: #27ae60; }
+        .status-alert { background: #e74c3c; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Voice Control Button */
+        .voice-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .voice-control:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .voice-control.listening {
+            background: #e74c3c;
+            animation: pulse-voice 1s infinite;
+        }
+
+        @keyframes pulse-voice {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Alert Panel */
+        .alert-panel {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 360px;
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            cursor: pointer;
+        }
+
+        .alert-panel.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+
+        .alert-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .alert-message {
+            font-size: 14px;
+        }
+
+        /* Control Buttons */
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .dark-mode .controls {
+            background: #2c3e50;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+            display: none;
+        }
+
+        .dark-mode .status-card {
+            background: #34495e;
+            color: #ecf0f1;
+        }
+
+        .status-card.show {
+            display: block;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+
+        .dark-mode .status-label {
+            color: #bdc3c7;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .dark-mode .status-value {
+            color: #ecf0f1;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .control-buttons {
+            display: none;
+        }
+
+        .control-buttons.show {
+            display: block;
+        }
+
+        .control-btn {
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            background: white;
+            color: #495057;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .dark-mode .control-btn {
+            background: #34495e;
+            color: #ecf0f1;
+            border-color: #5d6d7e;
+        }
+
+        .control-btn:hover, .control-btn:active {
+            border-color: #3498db;
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .control-btn:hover {
+            background: #4a6074;
+        }
+
+        .control-btn.active {
+            border-color: #3498db;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .dark-mode .control-btn.active {
+            background: #2980b9;
+            color: white;
+        }
+
+        .btn-start {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+            grid-column: 1 / -1;
+        }
+
+        .btn-start:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+            color: white;
+        }
+
+        .btn-end {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+            grid-column: 1 / -1;
+        }
+
+        .btn-end:hover {
+            background: #c0392b;
+            border-color: #c0392b;
+            color: white;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-content {
+            padding: 20px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .dark-mode .page-title {
+            color: #ecf0f1;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .card {
+            background: #34495e;
+            color: #ecf0f1;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+        }
+
+        .dark-mode .card-title {
+            color: #ecf0f1;
+            border-color: #5d6d7e;
+        }
+
+        /* Progress Rings */
+        .progress-ring-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .progress-ring {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .progress-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#3498db 0deg, #ecf0f1 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-inner {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .dark-mode .progress-inner {
+            background: #34495e;
+        }
+
+        /* Weather Widget */
+        .weather-widget {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .weather-temp {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .weather-desc {
+            opacity: 0.9;
+        }
+
+        /* Settings */
+        .setting-item {
+            margin-bottom: 20px;
+        }
+
+        .setting-label {
+            display: block;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .dark-mode .setting-label {
+            color: #ecf0f1;
+        }
+
+        .setting-input, .setting-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .dark-mode .setting-input, .dark-mode .setting-select {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-color: #5d6d7e;
+        }
+
+        .setting-input:focus, .setting-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 24px;
+            transition: 0.4s;
+        }
+
+        .toggle-label:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked + .toggle-label {
+            background-color: #3498db;
+        }
+
+        input:checked + .toggle-label:before {
+            transform: translateX(26px);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-top: 1px solid #ecf0f1;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .bottom-nav {
+            background: #34495e;
+            border-color: #5d6d7e;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        }
+
+        .nav-item {
+            padding: 12px 8px;
+            text-align: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #7f8c8d;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .dark-mode .nav-item {
+            color: #bdc3c7;
+        }
+
+        .nav-item.active {
+            color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .nav-item:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* Content spacing for bottom nav */
+        .content {
+            padding-bottom: 80px;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Install Banner */
+        .install-banner {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 15px 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            z-index: 1001;
+        }
+
+        .install-banner.show {
+            display: flex;
+        }
+
+        .install-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .install-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .install-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+            }
+            
+            .control-btn {
+                font-size: 13px;
+                padding: 10px 12px;
+                min-height: 45px;
+            }
+
+            .nav-label {
+                font-size: 9px;
+            }
+        }
+
+        /* Prevent text selection */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="no-select">
+    <!-- Install Banner -->
+    <div class="install-banner" id="installBanner">
+        <div class="install-text">📱 Instalează aplicația pentru acces rapid!</div>
+        <button class="install-btn" id="installBtn">Instalează</button>
+        <button class="install-close" onclick="hideInstallBanner()">×</button>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <button class="voice-control" onclick="toggleVoiceControl()" id="voiceBtn" title="Control vocal">
+                🎤
+            </button>
+            <div class="driver-info">
+                <div class="driver-name" id="driverName">Alexandru Popescu</div>
+                <div class="truck-number" id="truckNumber">Camion #SE-4521</div>
+                <div class="status-indicators">
+                    <div class="status-badge" id="gpsStatus">
+                        <span class="status-dot status-gps"></span>
+                        GPS Activ
+                    </div>
+                    <div class="status-badge" id="networkStatus">
+                        <span class="status-dot status-offline"></span>
+                        Offline Ready
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Panel -->
+        <div class="alert-panel" id="alertPanel" onclick="hideAlert()">
+            <div class="alert-title">⚠️ Alertă Siguranță</div>
+            <div class="alert-message" id="alertMessage">Pauza obligatorie în 15 minute!</div>
+        </div>
+
+        <div class="content">
+            <!-- Page: Program -->
+            <div class="page active" id="pageProgram">
+                <div class="controls">
+                    <!-- Status Card -->
+                    <div class="status-card" id="statusCard">
+                        <div class="status-item">
+                            <span class="status-label">Stare:</span>
+                            <span class="status-value" id="currentState">Program inactiv</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Program început la:</span>
+                            <span class="status-value" id="programStartTime">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Activitate curentă:</span>
+                            <span class="status-value" id="currentActivity">Nicio activitate</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Timp activitate:</span>
+                            <span class="status-value" id="activityTime">00:00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Start Program Button -->
+                    <div class="control-grid" id="startButton">
+                        <button class="control-btn btn-start" onclick="startProgram()">
+                            Start Program
+                        </button>
+                    </div>
+
+                    <!-- Control Buttons -->
+                    <div class="control-buttons" id="controlButtons">
+                        <div class="control-grid">
+                            <button class="control-btn" id="btnDriving" onclick="setActivity('driving', 'Condus', this)">
+                                Condus
+                            </button>
+                            
+                            <button class="control-btn" id="btnBreak" onclick="setActivity('break', 'Pauză', this)">
+                                Pauză
+                            </button>
+                            
+                            <button class="control-btn" id="btnWork" onclick="setActivity('work', 'Muncă', this)">
+                                Muncă
+                            </button>
+                            
+                            <button class="control-btn" id="btnOther" onclick="setActivity('other', 'Alte activități', this)">
+                                Alte activități
+                            </button>
+                            
+                            <button class="control-btn btn-end" onclick="endProgram()">
+                                Termină Program
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Overview -->
+                <div class="card">
+                    <h3 class="card-title">Status Zilnic</h3>
+                    <div class="progress-ring-container">
+                        <div class="progress-ring">
+                            <div class="progress-circle" id="drivingProgress">
+                                <div class="progress-inner">
+                                    <span id="drivingPercentage">0%</span>
+                                    <span style="font-size: 10px;">Condus</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-ring">
+                            <div class="progress-circle" id="breakProgress">
+                                <div class="progress-inner">
+                                    <span id="breakPercentage">0%</span>
+                                    <span style="font-size: 10px;">Pauze</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-ring">
+                            <div class="progress-circle" id="workProgress">
+                                <div class="progress-inner">
+                                    <span id="workPercentage">0%</span>
+                                    <span style="font-size: 10px;">Alte</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <div style="font-size: 14px; color: #7f8c8d;">Timp total program</div>
+                        <div style="font-size: 20px; font-weight: bold;" id="totalProgramTime">00:00:00</div>
+                    </div>
+                </div>
+
+                <!-- Weather Widget -->
+                <div class="weather-widget" id="weatherWidget">
+                    <div class="weather-temp" id="weatherTemp">
+                        <span class="loading"></span>
+                    </div>
+                    <div class="weather-desc" id="weatherDesc">Încărcare informații meteo...</div>
+                </div>
+            </div>
+
+            <!-- Additional pages will be loaded dynamically -->
+            <div class="page" id="pageGPS">
+                <div class="page-content">
+                    <h2 class="page-title">GPS & Localizare</h2>
+                    <div class="card">
+                        <div id="gpsContent">
+                            <div style="text-align: center; padding: 40px 20px;">
+                                <div class="loading" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                                <div style="margin-top: 15px;">Încărcare pagină GPS...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="pageSettings">
+                <div class="page-content">
+                    <h2 class="page-title">Setări</h2>
+                    
+                    <!-- Driver Info -->
+                    <div class="card">
+                        <h3 class="card-title">Informații Șofer</h3>
+                        <div class="setting-item">
+                            <label class="setting-label">Numele șoferului:</label>
+                            <input type="text" class="setting-input" id="settingDriverName" value="Alexandru Popescu" />
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">Numărul camionului:</label>
+                            <input type="text" class="setting-input" id="settingTruckNumber" value="SE-4521" />
+                        </div>
+                    </div>
+
+                    <!-- App Settings -->
+                    <div class="card">
+                        <h3 class="card-title">Setări Aplicație</h3>
+                        <div class="setting-item">
+                            <label class="setting-label">Mod întunecat:</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" />
+                                <label for="darkModeToggle" class="toggle-label"></label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">Control vocal:</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="voiceControlToggle" checked />
+                                <label for="voiceControlToggle" class="toggle-label"></label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">Alerte sonore:</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="soundAlertsToggle" />
+                                <label for="soundAlertsToggle" class="toggle-label"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div style="margin-top: 20px;">
+                        <button class="control-btn" onclick="saveSettings()" style="background: #27ae60; color: white; border-color: #27ae60; width: 100%;">
+                            💾 Salvează Setări
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-grid">
+                <button class="nav-item active" onclick="switchTab(this, 'program')">
+                    <div class="nav-icon">🚛</div>
+                    <div class="nav-label">Program</div>
+                </button>
+                
+                <button class="nav-item" onclick="switchTab(this, 'gps')">
+                    <div class="nav-icon">📍</div>
+                    <div class="nav-label">GPS</div>
+                </button>
+                
+                <button class="nav-item" onclick="switchTab(this, 'fuel')">
+                    <div class="nav-icon">⛽</div>
+                    <div class="nav-label">Fuel</div>
+                </button>
+                
+                <button class="nav-item" onclick="switchTab(this, 'reports')">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-label">Rapoarte</div>
+                </button>
+                
+                <button class="nav-item" onclick="switchTab(this, 'settings')">
+                    <div class="nav-icon">⚙️</div>
+                    <div class="nav-label">Setări</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #2c3e50; color: white; padding: 12px 20px; border-radius: 25px; z-index: 1000; opacity: 0; transition: all 0.3s ease; font-weight: 500;"></div>
+
+    <script src="js/app.js"></script>
+    <script src="js/data-manager.js"></script>
+    <script src="js/time-tracker.js"></script>
+    <script src="js/location-service.js"></script>
+    <script src="js/alerts.js"></script>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        // PWA Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallBanner();
+        });
+
+        function showInstallBanner() {
+            document.getElementById('installBanner').classList.add('show');
+        }
+
+        function hideInstallBanner() {
+            document.getElementById('installBanner').classList.remove('show');
+        }
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    hideInstallBanner();
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

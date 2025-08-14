@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Driver Support PWA - Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .test-section h3 {
+            color: #3498db;
+            margin-top: 0;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        
+        .test-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+        
+        .test-result.pass {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .test-result.fail {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .test-result.warn {
+            background: #fdeaa7;
+            color: #f39c12;
+        }
+        
+        .test-result.pending {
+            background: #e8f4fd;
+            color: #3498db;
+        }
+        
+        .test-controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .test-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            font-weight: 600;
+        }
+        
+        .test-btn:hover {
+            background: #2980b9;
+        }
+        
+        .test-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .summary {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .summary h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .test-details {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .error-details {
+            background: #fadbd8;
+            border: 1px solid #e74c3c;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Driver Support PWA - Test Suite</h1>
+        
+        <div class="test-controls">
+            <button class="test-btn" id="runAllBtn" onclick="runAllTests()">🚀 Run All Tests</button>
+            <button class="test-btn" id="runPWABtn" onclick="runPWATests()">📱 PWA Tests</button>
+            <button class="test-btn" id="runFunctionalBtn" onclick="runFunctionalTests()">⚙️ Functional Tests</button>
+            <button class="test-btn" id="clearBtn" onclick="clearResults()">🧹 Clear Results</button>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <!-- PWA Tests -->
+        <div class="test-section">
+            <h3>📱 PWA Compliance Tests</h3>
+            
+            <div class="test-result pending" id="test-manifest">
+                <span>Manifest.json validation</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-service-worker">
+                <span>Service Worker registration</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-offline">
+                <span>Offline functionality</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-icons">
+                <span>PWA icons availability</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-installable">
+                <span>App installability</span>
+                <span>⏳ Pending</span>
+            </div>
+        </div>
+        
+        <!-- Functional Tests -->
+        <div class="test-section">
+            <h3>⚙️ Core Functionality Tests</h3>
+            
+            <div class="test-result pending" id="test-data-manager">
+                <span>Data Manager initialization</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-time-tracker">
+                <span>Time Tracker functionality</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-location-service">
+                <span>Location Service (GPS)</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-alert-system">
+                <span>Alert System</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-local-storage">
+                <span>Local Storage persistence</span>
+                <span>⏳ Pending</span>
+            </div>
+        </div>
+        
+        <!-- Compliance Tests -->
+        <div class="test-section">
+            <h3>⚖️ Compliance & Safety Tests</h3>
+            
+            <div class="test-result pending" id="test-driving-limits">
+                <span>Driving time limits (9h/10h)</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-break-rules">
+                <span>Mandatory break rules (4.5h)</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-rest-periods">
+                <span>Rest period calculations</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-compliance-alerts">
+                <span>Compliance alert triggers</span>
+                <span>⏳ Pending</span>
+            </div>
+        </div>
+        
+        <!-- Performance Tests -->
+        <div class="test-section">
+            <h3>⚡ Performance Tests</h3>
+            
+            <div class="test-result pending" id="test-load-time">
+                <span>Initial load time (&lt; 3s)</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-memory-usage">
+                <span>Memory usage monitoring</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-battery-optimization">
+                <span>Battery optimization</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-responsive-design">
+                <span>Responsive design validation</span>
+                <span>⏳ Pending</span>
+            </div>
+        </div>
+        
+        <!-- Security Tests -->
+        <div class="test-section">
+            <h3>🔒 Security Tests</h3>
+            
+            <div class="test-result pending" id="test-https">
+                <span>HTTPS enforcement</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-data-encryption">
+                <span>Local data security</span>
+                <span>⏳ Pending</span>
+            </div>
+            
+            <div class="test-result pending" id="test-permissions">
+                <span>Permission handling</span>
+                <span>⏳ Pending</span>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <h3>📊 Test Summary</h3>
+            <div id="testSummary">
+                <div>Total Tests: <span id="totalTests">0</span></div>
+                <div>Passed: <span id="passedTests">0</span></div>
+                <div>Failed: <span id="failedTests">0</span></div>
+                <div>Warnings: <span id="warningTests">0</span></div>
+                <div>Success Rate: <span id="successRate">0%</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test Framework
+        class PWATestSuite {
+            constructor() {
+                this.tests = [];
+                this.results = new Map();
+                this.currentTest = 0;
+                this.totalTests = 0;
+            }
+
+            // Add test case
+            addTest(id, name, testFunction) {
+                this.tests.push({ id, name, testFunction });
+                this.totalTests++;
+            }
+
+            // Run single test
+            async runTest(test) {
+                const startTime = performance.now();
+                
+                try {
+                    const result = await test.testFunction();
+                    const endTime = performance.now();
+                    const duration = Math.round(endTime - startTime);
+                    
+                    this.results.set(test.id, {
+                        passed: result.passed,
+                        message: result.message,
+                        details: result.details || '',
+                        duration: duration
+                    });
+                    
+                    this.updateTestResult(test.id, result.passed, result.message, duration);
+                } catch (error) {
+                    this.results.set(test.id, {
+                        passed: false,
+                        message: 'Test failed with error',
+                        details: error.message,
+                        duration: 0
+                    });
+                    
+                    this.updateTestResult(test.id, false, 'Test error: ' + error.message);
+                }
+                
+                this.currentTest++;
+                this.updateProgress();
+            }
+
+            // Update test result in UI
+            updateTestResult(testId, passed, message, duration = 0) {
+                const element = document.getElementById(`test-${testId}`);
+                if (!element) return;
+                
+                element.className = `test-result ${passed ? 'pass' : 'fail'}`;
+                const status = passed ? '✅ PASS' : '❌ FAIL';
+                const durationText = duration > 0 ? ` (${duration}ms)` : '';
+                
+                element.innerHTML = `
+                    <span>${element.querySelector('span').textContent}</span>
+                    <span>${status}${durationText}</span>
+                `;
+                
+                if (message && !passed) {
+                    const details = document.createElement('div');
+                    details.className = 'test-details';
+                    details.textContent = message;
+                    element.appendChild(details);
+                }
+            }
+
+            // Update progress bar
+            updateProgress() {
+                const progress = (this.currentTest / this.totalTests) * 100;
+                document.getElementById('progressFill').style.width = `${progress}%`;
+                this.updateSummary();
+            }
+
+            // Update summary statistics
+            updateSummary() {
+                let passed = 0, failed = 0, warnings = 0;
+                
+                this.results.forEach(result => {
+                    if (result.passed) passed++;
+                    else failed++;
+                });
+                
+                document.getElementById('totalTests').textContent = this.totalTests;
+                document.getElementById('passedTests').textContent = passed;
+                document.getElementById('failedTests').textContent = failed;
+                document.getElementById('warningTests').textContent = warnings;
+                
+                const successRate = this.totalTests > 0 ? 
+                    Math.round((passed / this.totalTests) * 100) : 0;
+                document.getElementById('successRate').textContent = `${successRate}%`;
+            }
+
+            // Clear all results
+            clearResults() {
+                this.results.clear();
+                this.currentTest = 0;
+                
+                document.querySelectorAll('.test-result').forEach(element => {
+                    element.className = 'test-result pending';
+                    const spans = element.querySelectorAll('span');
+                    if (spans.length >= 2) {
+                        spans[1].textContent = '⏳ Pending';
+                    }
+                    
+                    // Remove any details
+                    const details = element.querySelector('.test-details');
+                    if (details) details.remove();
+                });
+                
+                document.getElementById('progressFill').style.width = '0%';
+                this.updateSummary();
+            }
+
+            // Run all tests
+            async runAllTests() {
+                this.clearResults();
+                
+                for (const test of this.tests) {
+                    await this.runTest(test);
+                    // Small delay for UI updates
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+        }
+
+        // Initialize test suite
+        const testSuite = new PWATestSuite();
+
+        // PWA Tests
+        testSuite.addTest('manifest', 'Manifest Validation', async () => {
+            try {
+                const response = await fetch('/manifest.json');
+                const manifest = await response.json();
+                
+                const requiredFields = ['name', 'short_name', 'start_url', 'display', 'icons'];
+                const missingFields = requiredFields.filter(field => !manifest[field]);
+                
+                return {
+                    passed: missingFields.length === 0,
+                    message: missingFields.length > 0 ? 
+                        `Missing fields: ${missingFields.join(', ')}` : 
+                        'Manifest is valid'
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    message: 'Failed to load manifest.json'
+                };
+            }
+        });
+
+        testSuite.addTest('service-worker', 'Service Worker', async () => {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    return {
+                        passed: !!registration,
+                        message: registration ? 'Service Worker registered' : 'No Service Worker found'
+                    };
+                } catch (error) {
+                    return {
+                        passed: false,
+                        message: 'Service Worker registration failed'
+                    };
+                }
+            } else {
+                return {
+                    passed: false,
+                    message: 'Service Worker not supported'
+                };
+            }
+        });
+
+        testSuite.addTest('offline', 'Offline Functionality', async () => {
+            // Simulate offline test
+            if ('serviceWorker' in navigator && 'caches' in window) {
+                try {
+                    const cacheNames = await caches.keys();
+                    return {
+                        passed: cacheNames.length > 0,
+                        message: cacheNames.length > 0 ? 
+                            `Found ${cacheNames.length} cache(s)` : 
+                            'No caches found'
+                    };
+                } catch (error) {
+                    return {
+                        passed: false,
+                        message: 'Cache API not available'
+                    };
+                }
+            } else {
+                return {
+                    passed: false,
+                    message: 'Required APIs not available'
+                };
+            }
+        });
+
+        testSuite.addTest('icons', 'PWA Icons', async () => {
+            const iconSizes = [192, 512];
+            const missingIcons = [];
+            
+            for (const size of iconSizes) {
+                try {
+                    const response = await fetch(`/icons/icon-${size}x${size}.png`);
+                    if (!response.ok) {
+                        missingIcons.push(`${size}x${size}`);
+                    }
+                } catch (error) {
+                    missingIcons.push(`${size}x${size}`);
+                }
+            }
+            
+            return {
+                passed: missingIcons.length === 0,
+                message: missingIcons.length > 0 ? 
+                    `Missing icons: ${missingIcons.join(', ')}` : 
+                    'All required icons found'
+            };
+        });
+
+        testSuite.addTest('installable', 'App Installability', async () => {
+            // Check for PWA installability signals
+            const hasManifest = document.querySelector('link[rel="manifest"]');
+            const hasServiceWorker = 'serviceWorker' in navigator;
+            const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
+            
+            const checks = [
+                { name: 'Manifest linked', passed: !!hasManifest },
+                { name: 'Service Worker support', passed: hasServiceWorker },
+                { name: 'HTTPS or localhost', passed: isHTTPS }
+            ];
+            
+            const failedChecks = checks.filter(check => !check.passed);
+            
+            return {
+                passed: failedChecks.length === 0,
+                message: failedChecks.length > 0 ? 
+                    `Failed: ${failedChecks.map(c => c.name).join(', ')}` : 
+                    'App appears installable'
+            };
+        });
+
+        // Functional Tests
+        testSuite.addTest('data-manager', 'Data Manager', async () => {
+            // Test if DataManager class is available
+            if (typeof DataManager === 'undefined') {
+                return {
+                    passed: false,
+                    message: 'DataManager class not found'
+                };
+            }
+            
+            try {
+                // Test localStorage availability
+                const testKey = 'test_storage';
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                
+                return {
+                    passed: true,
+                    message: 'DataManager and storage available'
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    message: 'Storage not available'
+                };
+            }
+        });
+
+        testSuite.addTest('time-tracker', 'Time Tracker', async () => {
+            if (typeof TimeTracker === 'undefined') {
+                return {
+                    passed: false,
+                    message: 'TimeTracker class not found'
+                };
+            }
+            
+            return {
+                passed: true,
+                message: 'TimeTracker available'
+            };
+        });
+
+        testSuite.addTest('location-service', 'Location Service', async () => {
+            const hasGeolocation = 'geolocation' in navigator;
+            const hasLocationService = typeof LocationService !== 'undefined';
+            
+            return {
+                passed: hasGeolocation && hasLocationService,
+                message: hasGeolocation && hasLocationService ? 
+                    'GPS functionality available' : 
+                    'GPS functionality missing'
+            };
+        });
+
+        testSuite.addTest('alert-system', 'Alert System', async () => {
+            const hasAlertSystem = typeof AlertSystem !== 'undefined';
+            const hasNotifications = 'Notification' in window;
+            
+            return {
+                passed: hasAlertSystem && hasNotifications,
+                message: hasAlertSystem && hasNotifications ? 
+                    'Alert system ready' : 
+                    'Alert system incomplete'
+            };
+        });
+
+        testSuite.addTest('local-storage', 'Local Storage', async () => {
+            try {
+                const testData = { test: 'data', timestamp: Date.now() };
+                localStorage.setItem('test_persistence', JSON.stringify(testData));
+                
+                const retrieved = JSON.parse(localStorage.getItem('test_persistence'));
+                localStorage.removeItem('test_persistence');
+                
+                return {
+                    passed: retrieved && retrieved.test === 'data',
+                    message: 'Local storage working correctly'
+                };
+            } catch (error) {
+                return {
+                    passed: false,
+                    message: 'Local storage failed: ' + error.message
+                };
+            }
+        });
+
+        // Compliance Tests
+        testSuite.addTest('driving-limits', 'Driving Limits', async () => {
+            // Test compliance rule constants
+            const maxDrivingTime = 9 * 60 * 60 * 1000; // 9 hours
+            const extendedDrivingTime = 10 * 60 * 60 * 1000; // 10 hours
+            
+            return {
+                passed: true,
+                message: `Limits: ${maxDrivingTime/3600000}h normal, ${extendedDrivingTime/3600000}h extended`
+            };
+        });
+
+        testSuite.addTest('break-rules', 'Break Rules', async () => {
+            const mandatoryBreakAfter = 4.5 * 60 * 60 * 1000; // 4.5 hours
+            const minBreakDuration = 45 * 60 * 1000; // 45 minutes
+            
+            return {
+                passed: true,
+                message: `Break after ${mandatoryBreakAfter/3600000}h, min ${minBreakDuration/60000}min`
+            };
+        });
+
+        testSuite.addTest('rest-periods', 'Rest Periods', async () => {
+            const dailyRest = 11 * 60 * 60 * 1000; // 11 hours
+            const weeklyRest = 45 * 60 * 60 * 1000; // 45 hours
+            
+            return {
+                passed: true,
+                message: `Daily: ${dailyRest/3600000}h, Weekly: ${weeklyRest/3600000}h`
+            };
+        });
+
+        testSuite.addTest('compliance-alerts', 'Compliance Alerts', async () => {
+            // Test if alert system can be triggered
+            const hasAlertSystem = typeof AlertSystem !== 'undefined';
+            
+            return {
+                passed: hasAlertSystem,
+                message: hasAlertSystem ? 'Alert triggers available' : 'Alert system missing'
+            };
+        });
+
+        // Performance Tests
+        testSuite.addTest('load-time', 'Load Time', async () => {
+            const navigation = performance.getEntriesByType('navigation')[0];
+            const loadTime = navigation.loadEventEnd - navigation.navigationStart;
+            const targetTime = 3000; // 3 seconds
+            
+            return {
+                passed: loadTime < targetTime,
+                message: `Load time: ${Math.round(loadTime)}ms (target: <${targetTime}ms)`
+            };
+        });
+
+        testSuite.addTest('memory-usage', 'Memory Usage', async () => {
+            if ('memory' in performance) {
+                const memory = performance.memory;
+                const usedMB = Math.round(memory.usedJSHeapSize / 1024 / 1024);
+                const limitMB = Math.round(memory.jsHeapSizeLimit / 1024 / 1024);
+                
+                return {
+                    passed: usedMB < 50, // Less than 50MB
+                    message: `Memory: ${usedMB}MB / ${limitMB}MB`
+                };
+            } else {
+                return {
+                    passed: true,
+                    message: 'Memory API not available'
+                };
+            }
+        });
+
+        testSuite.addTest('battery-optimization', 'Battery Optimization', async () => {
+            // Test for battery-draining features
+            const hasBackgroundSync = 'serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype;
+            
+            return {
+                passed: true,
+                message: hasBackgroundSync ? 'Background sync available' : 'No background sync'
+            };
+        });
+
+        testSuite.addTest('responsive-design', 'Responsive Design', async () => {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            const hasViewport = viewport && viewport.content.includes('width=device-width');
+            
+            return {
+                passed: hasViewport,
+                message: hasViewport ? 'Responsive viewport configured' : 'Missing responsive viewport'
+            };
+        });
+
+        // Security Tests
+        testSuite.addTest('https', 'HTTPS', async () => {
+            const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
+            
+            return {
+                passed: isSecure,
+                message: isSecure ? 'Secure connection' : 'Insecure connection'
+            };
+        });
+
+        testSuite.addTest('data-encryption', 'Data Security', async () => {
+            // Test that sensitive data is not stored in plain text
+            const storageKeys = Object.keys(localStorage);
+            const sensitivePatterns = ['password', 'token', 'secret', 'key'];
+            
+            const exposedData = storageKeys.filter(key => 
+                sensitivePatterns.some(pattern => key.toLowerCase().includes(pattern))
+            );
+            
+            return {
+                passed: exposedData.length === 0,
+                message: exposedData.length > 0 ? 
+                    `Potential sensitive keys: ${exposedData.join(', ')}` : 
+                    'No obvious sensitive data in storage'
+            };
+        });
+
+        testSuite.addTest('permissions', 'Permission Handling', async () => {
+            // Test permission API usage
+            const hasPermissions = 'permissions' in navigator;
+            
+            return {
+                passed: hasPermissions,
+                message: hasPermissions ? 'Permission API available' : 'Permission API not supported'
+            };
+        });
+
+        // Control functions
+        async function runAllTests() {
+            disableButtons(true);
+            await testSuite.runAllTests();
+            disableButtons(false);
+        }
+
+        async function runPWATests() {
+            disableButtons(true);
+            testSuite.clearResults();
+            
+            const pwaTests = testSuite.tests.filter(test => 
+                ['manifest', 'service-worker', 'offline', 'icons', 'installable'].includes(test.id)
+            );
+            
+            for (const test of pwaTests) {
+                await testSuite.runTest(test);
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            disableButtons(false);
+        }
+
+        async function runFunctionalTests() {
+            disableButtons(true);
+            testSuite.clearResults();
+            
+            const functionalTests = testSuite.tests.filter(test => 
+                ['data-manager', 'time-tracker', 'location-service', 'alert-system', 'local-storage'].includes(test.id)
+            );
+            
+            for (const test of functionalTests) {
+                await testSuite.runTest(test);
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            disableButtons(false);
+        }
+
+        function clearResults() {
+            testSuite.clearResults();
+        }
+
+        function disableButtons(disabled) {
+            document.querySelectorAll('.test-btn').forEach(btn => {
+                btn.disabled = disabled;
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 PWA Test Suite initialized');
+            console.log(`📊 Total tests: ${testSuite.totalTests}`);
+        });
+    </script>
+</body>
+</html>

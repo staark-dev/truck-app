@@ -1,1 +1,260 @@
-
+{
+  "name": "driver-support-pwa",
+  "version": "1.0.0",
+  "description": "🚛 Progressive Web App pentru managementul timpilor de lucru conform reglementărilor din Suedia",
+  "main": "index.html",
+  "homepage": "https://staark-dev.github.io/truck-app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/staark-dev/truck-app.git"
+  },
+  "keywords": [
+    "pwa",
+    "driver",
+    "compliance",
+    "sweden",
+    "trucking",
+    "time-tracking",
+    "gps",
+    "offline-first",
+    "mobile-app"
+  ],
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com",
+    "url": "https://github.com/staark-dev"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/username/truck-app/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "start": "http-server -p 8080 -c-1 --cors",
+    "start:https": "http-server -p 8443 -S -C cert.pem -K key.pem -c-1 --cors",
+    "build": "npm run clean && npm run minify && npm run optimize",
+    "dev": "npm run start",
+    "test": "npm run test:lighthouse && npm run test:pwa",
+    "test:lighthouse": "lighthouse http://localhost:8080 --output=html --output-path=./reports/lighthouse.html --chrome-flags=\"--headless\"",
+    "test:pwa": "pwa-test-suite --url=http://localhost:8080",
+    "test:lighthouse-ci": "lhci autorun",
+    "minify": "npm run minify:js && npm run minify:css",
+    "minify:js": "find js -name '*.js' ! -name '*.min.js' -exec sh -c 'uglifyjs \"$1\" -c -m -o \"${1%.js}.min.js\"' _ {} \\;",
+    "minify:css": "find . -name '*.css' ! -name '*.min.css' -exec sh -c 'cleancss -o \"${1%.css}.min.css\" \"$1\"' _ {} \\;",
+    "optimize": "npm run optimize:images && npm run generate:sitemap",
+    "optimize:images": "imagemin 'icons/*.png' --out-dir=icons --plugin=imagemin-pngquant",
+    "generate:sitemap": "node scripts/generate-sitemap.js",
+    "clean": "rm -rf dist && rm -f js/*.min.js && rm -f *.min.css",
+    "deploy": "npm run build && npm run deploy:gh-pages",
+    "deploy:gh-pages": "gh-pages -d .",
+    "validate": "npm run validate:manifest && npm run validate:sw && npm run validate:html",
+    "validate:manifest": "web-app-manifest-validator manifest.json",
+    "validate:sw": "node -c sw.js",
+    "validate:html": "html-validate index.html",
+    "audit": "npm audit && npm run security:check",
+    "security:check": "nsp check",
+    "install:tools": "npm install -g http-server lighthouse @lhci/cli uglify-js clean-css-cli imagemin-cli gh-pages",
+    "setup": "npm run install:tools && npm run create:cert",
+    "create:cert": "mkcert localhost 127.0.0.1 ::1",
+    "prebuild": "npm run validate",
+    "postbuild": "npm run test:lighthouse",
+    "pretest": "npm run start & sleep 5",
+    "posttest": "pkill -f http-server",
+    "format": "prettier --write *.html js/*.js *.json *.md",
+    "lint": "eslint js/*.js",
+    "serve:dist": "http-server dist -p 8080 -c-1",
+    "watch": "nodemon --watch . --ext html,js,css,json --ignore node_modules --ignore .git --exec 'npm run validate'",
+    "release": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:major": "npm version major && git push && git push --tags"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.12.0",
+    "clean-css-cli": "^5.6.2",
+    "eslint": "^8.56.0",
+    "gh-pages": "^6.1.0",
+    "html-validate": "^8.7.4",
+    "http-server": "^14.1.1",
+    "imagemin-cli": "^7.0.0",
+    "imagemin-pngquant": "^9.0.2",
+    "lighthouse": "^11.4.0",
+    "nodemon": "^3.0.2",
+    "prettier": "^3.1.1",
+    "uglify-js": "^3.17.4",
+    "web-app-manifest-validator": "^1.0.0"
+  },
+  "optionalDependencies": {
+    "mkcert": "^3.2.0",
+    "nsp": "^3.2.1"
+  },
+  "peerDependencies": {
+    "workbox-cli": "^7.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2022": true,
+      "serviceworker": true
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module"
+    },
+    "globals": {
+      "app": "readonly",
+      "DataManager": "readonly",
+      "TimeTracker": "readonly",
+      "LocationService": "readonly",
+      "AlertSystem": "readonly"
+    },
+    "rules": {
+      "no-console": "warn",
+      "no-unused-vars": "error",
+      "prefer-const": "error",
+      "no-var": "error"
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "lighthouse-ci": {
+    "ci": {
+      "collect": {
+        "startServerCommand": "npm run start",
+        "url": [
+          "http://localhost:8080"
+        ],
+        "numberOfRuns": 3
+      },
+      "assert": {
+        "assertions": {
+          "categories:performance": [
+            "warn",
+            {
+              "minScore": 0.8
+            }
+          ],
+          "categories:pwa": [
+            "error",
+            {
+              "minScore": 0.9
+            }
+          ],
+          "categories:accessibility": [
+            "error",
+            {
+              "minScore": 0.9
+            }
+          ],
+          "categories:best-practices": [
+            "warn",
+            {
+              "minScore": 0.8
+            }
+          ],
+          "categories:seo": [
+            "warn",
+            {
+              "minScore": 0.8
+            }
+          ]
+        }
+      },
+      "upload": {
+        "target": "filesystem",
+        "outputDir": "./lighthouse-ci-results"
+      }
+    }
+  },
+  "workbox": {
+    "globDirectory": "./",
+    "globPatterns": [
+      "**/*.{html,js,css,png,jpg,svg,json}",
+      "!node_modules/**/*",
+      "!.git/**/*",
+      "!lighthouse-ci-results/**/*",
+      "!reports/**/*"
+    ],
+    "swDest": "sw.js",
+    "runtimeCaching": [
+      {
+        "urlPattern": /^https:\/\/api\./,
+        "handler": "NetworkFirst",
+        "options": {
+          "cacheName": "api-cache",
+          "expiration": {
+            "maxEntries": 50,
+            "maxAgeSeconds": 300
+          }
+        }
+      },
+      {
+        "urlPattern": /\.(?:png|jpg|jpeg|svg|gif)$/,
+        "handler": "CacheFirst",
+        "options": {
+          "cacheName": "images-cache",
+          "expiration": {
+            "maxEntries": 100,
+            "maxAgeSeconds": 2592000
+          }
+        }
+      }
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run validate",
+      "pre-push": "npm run test"
+    }
+  },
+  "config": {
+    "port": 8080,
+    "host": "localhost",
+    "https": false
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/username"
+  },
+  "files": [
+    "index.html",
+    "manifest.json",
+    "sw.js",
+    "js/",
+    "icons/",
+    "README.md",
+    "LICENSE"
+  ],
+  "directories": {
+    "test": "test",
+    "doc": "docs"
+  },
+  "contributors": [
+    {
+      "name": "Your Name",
+      "email": "your.email@example.com",
+      "url": "https://github.com/username"
+    }
+  ],
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}

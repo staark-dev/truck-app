@@ -1,0 +1,293 @@
+{
+  "_description": "🚛 Driver Support PWA - Local Development Configuration",
+  "_note": "Rename this file to 'local.json' and adjust settings for your development environment",
+  
+  "app": {
+    "name": "Driver Support Pro - DEV",
+    "version": "1.0.0-dev",
+    "debug": true,
+    "verbose_logging": true,
+    "environment": "development"
+  },
+  
+  "server": {
+    "host": "localhost",
+    "port": 8080,
+    "https": {
+      "enabled": true,
+      "port": 8443,
+      "cert_path": "./certs/cert.pem",
+      "key_path": "./certs/key.pem"
+    },
+    "cors": {
+      "enabled": true,
+      "origins": ["https://localhost:8443", "http://localhost:8080"]
+    }
+  },
+  
+  "pwa": {
+    "cache_strategy": "development",
+    "service_worker": {
+      "enabled": true,
+      "cache_version": "dev",
+      "debug_mode": true,
+      "skip_waiting": true,
+      "claim_clients": true
+    },
+    "manifest": {
+      "theme_color": "#3498db",
+      "background_color": "#ffffff",
+      "start_url": "/",
+      "scope": "/",
+      "display": "standalone"
+    }
+  },
+  
+  "features": {
+    "gps_tracking": {
+      "enabled": true,
+      "mock_data": false,
+      "high_accuracy": true,
+      "update_frequency": 5000,
+      "mock_coordinates": {
+        "latitude": 59.3293,
+        "longitude": 18.0686,
+        "accuracy": 10
+      }
+    },
+    "voice_control": {
+      "enabled": true,
+      "mock_speech_api": false,
+      "language": "ro-RO",
+      "confidence_threshold": 0.7
+    },
+    "notifications": {
+      "enabled": true,
+      "test_mode": true,
+      "mock_permissions": false
+    },
+    "analytics": {
+      "enabled": false,
+      "debug_mode": true,
+      "collect_errors": true,
+      "collect_performance": true
+    }
+  },
+  
+  "compliance": {
+    "rules": {
+      "max_driving_time": 9,
+      "extended_driving_time": 10,
+      "mandatory_break_after": 4.5,
+      "min_break_duration": 0.75,
+      "daily_rest_period": 11,
+      "weekly_rest_period": 45
+    },
+    "alerts": {
+      "enabled": true,
+      "test_mode": true,
+      "advance_warning_minutes": 30,
+      "sound_enabled": true,
+      "vibration_enabled": true
+    }
+  },
+  
+  "storage": {
+    "type": "localStorage",
+    "prefix": "driverapp_dev_",
+    "compression": false,
+    "encryption": false,
+    "auto_backup": true,
+    "backup_interval": 300000,
+    "max_storage_size": "50MB",
+    "cleanup_older_than": 30
+  },
+  
+  "api": {
+    "weather": {
+      "enabled": true,
+      "mock_data": true,
+      "api_key": "your_weather_api_key_here",
+      "base_url": "https://api.openweathermap.org/data/2.5",
+      "update_interval": 600000
+    },
+    "geocoding": {
+      "enabled": true,
+      "mock_data": true,
+      "api_key": "your_geocoding_api_key_here",
+      "base_url": "https://api.mapbox.com/geocoding/v5",
+      "cache_results": true
+    },
+    "fuel_prices": {
+      "enabled": false,
+      "mock_data": true,
+      "api_key": "your_fuel_api_key_here",
+      "base_url": "https://api.fuel-prices.com/v1",
+      "update_interval": 3600000
+    }
+  },
+  
+  "testing": {
+    "lighthouse": {
+      "enabled": true,
+      "threshold": {
+        "performance": 80,
+        "pwa": 90,
+        "accessibility": 90,
+        "best_practices": 80,
+        "seo": 80
+      }
+    },
+    "unit_tests": {
+      "enabled": true,
+      "coverage_threshold": 80,
+      "watch_mode": true
+    },
+    "e2e_tests": {
+      "enabled": false,
+      "headless": true,
+      "screenshot_on_failure": true
+    }
+  },
+  
+  "development": {
+    "hot_reload": true,
+    "source_maps": true,
+    "minification": false,
+    "mock_data": {
+      "driver_sessions": true,
+      "gps_tracks": true,
+      "fuel_data": true,
+      "weather_data": true
+    },
+    "tools": {
+      "eslint": true,
+      "prettier": true,
+      "lighthouse": true,
+      "pwa_audit": true
+    }
+  },
+  
+  "security": {
+    "csp": {
+      "enabled": true,
+      "report_only": true,
+      "report_uri": "/csp-report"
+    },
+    "https_redirect": false,
+    "secure_headers": true,
+    "input_validation": true,
+    "rate_limiting": false
+  },
+  
+  "performance": {
+    "caching": {
+      "static_files": 3600,
+      "api_responses": 300,
+      "images": 86400
+    },
+    "compression": false,
+    "lazy_loading": true,
+    "code_splitting": false,
+    "service_worker_precache": true
+  },
+  
+  "logging": {
+    "level": "debug",
+    "console": true,
+    "file": false,
+    "remote": false,
+    "categories": {
+      "app": true,
+      "data": true,
+      "gps": true,
+      "alerts": true,
+      "performance": true,
+      "errors": true
+    }
+  },
+  
+  "mock_data": {
+    "driver_profiles": [
+      {
+        "name": "Alexandru Popescu",
+        "truck_number": "SE-4521",
+        "license_number": "ABC123456",
+        "company": "Transport Nordic SRL"
+      },
+      {
+        "name": "Maria Andersson", 
+        "truck_number": "SE-7890",
+        "license_number": "XYZ789012",
+        "company": "Scania Logistics AB"
+      }
+    ],
+    "sample_sessions": [
+      {
+        "date": "2025-01-15",
+        "start_time": "06:00",
+        "activities": [
+          {"type": "driving", "duration": 270, "start": "06:00"},
+          {"type": "break", "duration": 45, "start": "10:30"},
+          {"type": "driving", "duration": 240, "start": "11:15"},
+          {"type": "work", "duration": 120, "start": "15:15"},
+          {"type": "driving", "duration": 180, "start": "17:15"}
+        ]
+      }
+    ],
+    "gps_tracks": [
+      {
+        "timestamp": "2025-01-15T06:00:00Z",
+        "latitude": 59.3293,
+        "longitude": 18.0686,
+        "speed": 0,
+        "accuracy": 5
+      }
+    ]
+  },
+  
+  "deployment": {
+    "target": "github_pages",
+    "branch": "gh-pages",
+    "custom_domain": "",
+    "build_command": "npm run build",
+    "output_dir": "./dist",
+    "clean_before_deploy": true
+  },
+  
+  "integrations": {
+    "github": {
+      "auto_deploy": true,
+      "run_tests": true,
+      "lighthouse_ci": true
+    },
+    "external_apis": {
+      "timeout": 5000,
+      "retry_attempts": 3,
+      "fallback_to_cache": true
+    }
+  },
+  
+  "_development_notes": [
+    "Pentru HTTPS local, rulează: npm run create:cert",
+    "Pentru GPS testing, folosește device real sau mock_data: true",
+    "Pentru debugging PWA, folosește Chrome DevTools > Application",
+    "Pentru Lighthouse audit, rulează: npm run test:lighthouse",
+    "Pentru testing offline, folosește Chrome DevTools > Network > Offline"
+  ],
+  
+  "_environment_variables": {
+    "NODE_ENV": "development",
+    "DEBUG": "driver-app:*",
+    "PWA_ENV": "development",
+    "ENABLE_MOCKS": "true"
+  },
+  
+  "_required_tools": [
+    "Node.js 16+",
+    "npm 8+", 
+    "mkcert (pentru HTTPS local)",
+    "Chrome/Edge (pentru PWA testing)",
+    "http-server (pentru local serving)"
+  ]
+}

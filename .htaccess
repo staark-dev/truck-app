@@ -1,1 +1,249 @@
+# 🚛 Driver Support PWA - Apache Configuration
+# Configurare .htaccess pentru optimizarea PWA pe servere Apache
 
+# Enable rewrite engine
+RewriteEngine On
+
+# =========================================
+# PWA SPECIFIC CONFIGURATIONS
+# =========================================
+
+# Ensure HTTPS redirect (important for PWA)
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Service Worker must be served from root with correct MIME type
+<Files "sw.js">
+    Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+    Header set Service-Worker-Allowed "/"
+    Header set Content-Type "application/javascript"
+</Files>
+
+# Manifest.json configuration
+<Files "manifest.json">
+    Header set Content-Type "application/manifest+json"
+    Header set Cache-Control "public, max-age=86400"
+</Files>
+
+# =========================================
+# MIME TYPES FOR PWA ASSETS
+# =========================================
+
+# Web App Manifest
+AddType application/manifest+json .webmanifest
+AddType application/manifest+json .json
+
+# Service Worker
+AddType application/javascript .js
+
+# Web fonts
+AddType font/woff2 .woff2
+AddType font/woff .woff
+AddType font/ttf .ttf
+AddType font/eot .eot
+
+# Images
+AddType image/webp .webp
+AddType image/svg+xml .svg
+
+# =========================================
+# CACHING STRATEGY
+# =========================================
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Service Worker - no cache
+    ExpiresByType application/javascript "access plus 0 seconds"
+    
+    # Manifest - short cache
+    ExpiresByType application/manifest+json "access plus 1 day"
+    
+    # HTML - short cache for updates
+    ExpiresByType text/html "access plus 1 hour"
+    
+    # CSS and JS - medium cache
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    
+    # Images - long cache
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # Fonts - long cache
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    
+    # Icons - long cache
+    ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
+
+# =========================================
+# SECURITY HEADERS
+# =========================================
+
+<IfModule mod_headers.c>
+    # Security headers for PWA
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Content Security Policy for PWA
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; manifest-src 'self'; worker-src 'self'"
+    
+    # Permissions Policy (formerly Feature Policy)
+    Header always set Permissions-Policy "geolocation=(self), notifications=(self), persistent-storage=(self)"
+    
+    # CORS headers for service worker
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type"
+    
+    # Force download for certain file types
+    <FilesMatch "\.(json|log|bak)$">
+        Header set Content-Disposition "attachment"
+    </FilesMatch>
+</IfModule>
+
+# =========================================
+# COMPRESSION
+# =========================================
+
+<IfModule mod_deflate.c>
+    # Compress HTML, CSS, JavaScript, JSON, XML, etc.
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/manifest+json
+    
+    # Don't compress images
+    SetEnvIfNoCase Request_URI \
+        \.(?:gif|jpe?g|png|ico|webp)$ no-gzip dont-vary
+    SetEnvIfNoCase Request_URI \
+        \.(?:exe|t?gz|zip|bz2|sit|rar)$ no-gzip dont-vary
+</IfModule>
+
+# =========================================
+# URL REWRITING FOR SPA
+# =========================================
+
+# Handle client-side routing (fallback to index.html)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|json|xml|txt)$
+RewriteRule ^(.*)$ /index.html [L,QSA]
+
+# =========================================
+# PERFORMANCE OPTIMIZATIONS
+# =========================================
+
+# Enable Keep-Alive
+<IfModule mod_headers.c>
+    Header set Connection keep-alive
+</IfModule>
+
+# Remove ETags (better to use Cache-Control)
+FileETag None
+
+# Disable server signature
+ServerSignature Off
+
+# =========================================
+# ERROR PAGES
+# =========================================
+
+# Custom error pages
+ErrorDocument 404 /index.html
+ErrorDocument 500 /index.html
+ErrorDocument 503 /index.html
+
+# =========================================
+# MOBILE OPTIMIZATIONS
+# =========================================
+
+# Serve different content for mobile (if needed)
+RewriteCond %{HTTP_USER_AGENT} "Mobile|Android|iPhone|iPad" [NC]
+RewriteCond %{QUERY_STRING} !mobile=false
+RewriteRule ^$ /index.html?mobile=true [L,QSA]
+
+# =========================================
+# DEVELOPMENT HELPERS
+# =========================================
+
+# In development, disable caching
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_HOST} ^localhost [NC]
+    RewriteRule .* - [E=no-cache:1]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set Cache-Control "no-cache, no-store, must-revalidate" env=no-cache
+    Header always set Pragma "no-cache" env=no-cache
+    Header always set Expires "0" env=no-cache
+</IfModule>
+
+# =========================================
+# LOGGING (for debugging)
+# =========================================
+
+# Log rewrite activity (uncomment for debugging)
+# LogLevel alert rewrite:trace3
+
+# =========================================
+# SPECIAL FILE HANDLING
+# =========================================
+
+# Handle iOS splash screens
+<FilesMatch "apple-touch-startup-image.*\.png$">
+    Header set Cache-Control "public, max-age=31536000"
+</FilesMatch>
+
+# Handle Android Chrome icons
+<FilesMatch "icon-.*\.png$">
+    Header set Cache-Control "public, max-age=31536000"
+</FilesMatch>
+
+# Force download of backup files
+<FilesMatch "\.(bak|backup|sql|log)$">
+    Header set Content-Type "application/octet-stream"
+    Header set Content-Disposition "attachment"
+</FilesMatch>
+
+# Protect sensitive files
+<FilesMatch "\.(env|config|ini|conf|log|bak)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# =========================================
+# FINAL NOTES
+# =========================================
+
+# This .htaccess file is optimized for:
+# - Progressive Web Apps (PWA)
+# - Single Page Applications (SPA)
+# - Mobile-first design
+# - Security best practices
+# - Performance optimization
+# - SEO friendly URLs
+
+# For GitHub Pages, most of these settings are handled automatically
+# This file is useful if you deploy to other Apache servers
+
+# Test your configuration at: https://htaccess.madewithlove.com/

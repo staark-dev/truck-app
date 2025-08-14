@@ -1,1 +1,105 @@
+# 🚛 Driver Support PWA - Robots.txt
+# Configurează accesul pentru motoarele de căutare
 
+User-agent: *
+Allow: /
+
+# Permite accesul la toate fișierele principale
+Allow: /index.html
+Allow: /manifest.json
+Allow: /icons/
+Allow: /screenshots/
+
+# Restricționează accesul la fișiere de dezvoltare
+Disallow: /test/
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /.github/
+Disallow: /scripts/
+Disallow: /dist/
+Disallow: /lighthouse-ci-results/
+Disallow: /reports/
+
+# Restricționează accesul la fișiere sensibile
+Disallow: /.env
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /.gitignore
+Disallow: /deploy.sh
+Disallow: /build-report.json
+Disallow: /BUILD_REPORT.md
+
+# Permite accesul la service worker
+Allow: /sw.js
+
+# Permite accesul la JavaScript-ul principal
+Allow: /js/app.js
+Allow: /js/app.min.js
+
+# Configurații specifice pentru diferite crawlere
+
+# Google Bot - permite indexarea completă a PWA
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bing Bot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Yahoo Bot
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+# DuckDuckGo Bot
+User-agent: DuckDuckBot
+Allow: /
+
+# Yandex Bot (pentru utilizatori din Europa de Est)
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Restricționează bot-urile rău intenționate
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# Permite bot-urile pentru validarea PWA
+User-agent: lighthouse
+Allow: /
+
+User-agent: PageSpeed
+Allow: /
+
+# Referințe către sitemap și alte resurse
+Sitemap: https://username.github.io/driver-support-app/sitemap.xml
+
+# Informații despre host
+Host: username.github.io
+
+# Rate limiting pentru a evita supraîncărcarea
+Crawl-delay: 1
+
+# Comentarii pentru dezvoltatori
+# Acest fișier robots.txt este optimizat pentru:
+# - PWA (Progressive Web Apps)
+# - GitHub Pages hosting
+# - SEO pentru aplicații mobile
+# - Conformitate cu standardele web
+
+# Pentru actualizări ale acestui fișier, consultați:
+# https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt
+# https://www.robotstxt.org/robotstxt.html
+
+# Ultima actualizare: 2025-01-15
