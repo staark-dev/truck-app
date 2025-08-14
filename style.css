@@ -1,0 +1,198 @@
+/* Additional styles for loading screen and popups */
+
+/* Loading Screen Styles */
+#loadingScreen {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#loadingProgress {
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { box-shadow: 0 0 5px rgba(255,255,255,0.3); }
+    to { box-shadow: 0 0 15px rgba(255,255,255,0.6); }
+}
+
+/* Permission Modal Styles */
+.permission-modal {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.permission-modal-content {
+    animation: slideUp 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.permission-button {
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.permission-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.permission-button:active {
+    transform: translateY(0);
+}
+
+.permission-allow {
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+}
+
+.permission-allow:hover {
+    background: linear-gradient(135deg, #2980b9, #2471a3) !important;
+}
+
+.permission-deny {
+    transition: all 0.2s ease;
+}
+
+.permission-deny:hover {
+    background: #ecf0f1 !important;
+    color: #2c3e50 !important;
+}
+
+/* Toast notification enhancements */
+#toast {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.8) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Enhanced loading animations for better UX */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced button styles for better feedback */
+.control-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+    position: relative;
+}
+
+.control-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s ease infinite;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Dark mode enhancements for popups */
+.dark-mode .permission-modal-content {
+    background: #2c3e50 !important;
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .permission-button {
+    border-color: #34495e !important;
+}
+
+.dark-mode .permission-deny {
+    background: #34495e !important;
+    color: #ecf0f1 !important;
+}
+
+.dark-mode .permission-deny:hover {
+    background: #4a6278 !important;
+}
+
+/* Responsive enhancements */
+@media (max-width: 480px) {
+    .permission-modal-content {
+        margin: 10px !important;
+        padding: 20px !important;
+    }
+    
+    #loadingScreen h2 {
+        font-size: 24px;
+    }
+    
+    #loadingScreen div[style*="font-size: 48px"] {
+        font-size: 36px !important;
+    }
+}
+
+/* Accessibility improvements */
+.permission-button:focus {
+    outline: 3px solid #3498db;
+    outline-offset: 2px;
+}
+
+.permission-modal-content h3 {
+    line-height: 1.4;
+}
+
+.permission-modal-content p {
+    line-height: 1.6;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .permission-modal-content {
+        border: 2px solid #000 !important;
+    }
+    
+    .permission-button {
+        border-width: 3px !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    #loadingProgress,
+    .loading-spinner,
+    .control-btn.loading::after {
+        animation: none;
+    }
+    
+    .permission-modal-content {
+        animation: none;
+    }
+    
+    .permission-button {
+        transition: none;
+    }
+}
