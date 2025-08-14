@@ -133,447 +133,384 @@
             <div class="alert-message" id="alertMessage">Pauza obligatorie în 15 minute!</div>
         </div>
 
-        <div class="content">
-            <!-- Page: Program -->
-            <div class="page active" id="pageProgram">
-                <div class="controls">
-                    <!-- Status Card -->
-                    <div class="status-card" id="statusCard">
-                        <div class="status-item">
-                            <span class="status-label">Stare:</span>
-                            <span class="status-value" id="currentState">Program inactiv</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Program început la:</span>
-                            <span class="status-value" id="programStartTime">-</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Activitate curentă:</span>
-                            <span class="status-value" id="currentActivity">Nicio activitate</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Timp activitate:</span>
-                            <span class="status-value" id="activityTime">00:00:00</span>
-                        </div>
-                    </div>
-
-                    <!-- Start Program Button -->
-                    <div class="control-grid" id="startButton">
-                        <button class="control-btn btn-start" onclick="startProgram()">
-                            Start Program
-                        </button>
-                    </div>
-
-                    <!-- Control Buttons -->
-                    <div class="control-buttons" id="controlButtons">
-                        <div class="control-grid">
-                            <button class="control-btn" id="btnDriving" onclick="setActivity('driving', 'Condus', this)">
-                                🚗 Condus
-                            </button>
-                            <button class="control-btn" id="btnBreak" onclick="setActivity('break', 'Pauză', this)">
-                                ☕ Pauză
-                            </button>
-                            <button class="control-btn" id="btnWork" onclick="setActivity('work', 'Lucru', this)">
-                                🔧 Lucru
-                            </button>
-                            <button class="control-btn" id="btnOther" onclick="setActivity('other', 'Altele', this)">
-                                📋 Altele
-                            </button>
-                            <button class="control-btn" onclick="endProgram()" style="background: #e74c3c; border-color: #e74c3c;">
-                                ⏹️ Termină Program
-                            </button>
-                        </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Progress Overview -->
-                <div class="card">
-                    <h3 class="card-title">Status Zilnic</h3>
-                    <div class="progress-ring-container">
-                        <div class="progress-ring">
-                            <div class="progress-circle" id="drivingProgress">
-                                <div class="progress-inner">
-                                    <span id="drivingPercentage">0%</span>
-                                    <span style="font-size: 10px;">Condus</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="progress-ring">
-                            <div class="progress-circle" id="breakProgress">
-                                <div class="progress-inner">
-                                    <span id="breakPercentage">0%</span>
-                                    <span style="font-size: 10px;">Pauze</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="progress-ring">
-                            <div class="progress-circle" id="workProgress">
-                                <div class="progress-inner">
-                                    <span id="workPercentage">0%</span>
-                                    <span style="font-size: 10px;">Alte</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="text-align: center; margin-top: 10px;">
-                        <div style="font-size: 14px; color: #7f8c8d;">Timp total program</div>
-                        <div style="font-size: 20px; font-weight: bold;" id="totalProgramTime">00:00:00</div>
-                    </div>
-                </div>
-
-                <div class="location-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3 style="margin: 0; font-size: 18px;">📍 Locația Curentă</h3>
-                        <button onclick="refreshLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
-                            🔄
-                        </button>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" id="currentLocation">
-                            Se obține locația...
-                        </div>
-                        <div style="font-size: 12px; opacity: 0.9;">
-                            Ultimul update: <span id="locationLastUpdate">--:--</span>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-size: 12px; opacity: 0.8;">Viteză curentă</div>
-                            <div style="font-size: 18px; font-weight: bold;" id="currentSpeed">0 km/h</div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="shareCurrentLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                                📤 Trimite
-                            </button>
-                            <button onclick="openLocationInMaps()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                                🗺️ Maps
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Card-ul meteo poate rămâne la fel, acum va fi actualizat automat cu locația reală -->
-                <div class="weather-card" style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                    <div style="display: none; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-size: 24px; font-weight: bold; color: #2c3e50;" id="weatherTemp">--°C</div>
-                            <div style="font-size: 14px; color: #7f8c8d;" id="weatherDesc">Se încarcă...</div>
-                        </div>
-                        <div style="font-size: 36px;">🌤️</div>
-                    </div>
-                </div>
+    <div class="content">
+        <!-- Page: Program -->
+        <div class="page active" id="pageProgram">
+        <div class="controls">
+            <!-- Status Card -->
+            <div class="status-card" id="statusCard">
+            <div class="status-item">
+                <span class="status-label">Stare:</span>
+                <span class="status-value" id="currentState">Program inactiv</span>
             </div>
-            
-            <!-- GPS Page -->
-            <div class="page" id="pageGPS">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">🗺️ GPS & Navigație</h2>
-                <div id="gpsContent">
-                    <div style="text-align: center; padding: 40px;">
-                        <div style="font-size: 18px; color: #666;">Se încarcă datele GPS...</div>
-                    </div>
-                </div>
+            <div class="status-item">
+                <span class="status-label">Program început la:</span>
+                <span class="status-value" id="programStartTime">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Activitate curentă:</span>
+                <span class="status-value" id="currentActivity">Nicio activitate</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Timp activitate:</span>
+                <span class="status-value" id="activityTime">00:00:00</span>
+            </div>
             </div>
 
-            <!-- Fuel Page -->
-            <div class="page" id="pageFuel">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">⛽ Management Combustibil</h2>
-                
-                <!-- Status Combustibil -->
-                <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px; font-size: 20px;">⛽ Status Combustibil</h3>
-                    <div style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 15px;">
-                        76% • 380L
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold;">8.2L</div>
-                            <div style="font-size: 12px; opacity: 0.9;">Consum/100km</div>
-                        </div>
-                        <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold;">520km</div>
-                            <div style="font-size: 12px; opacity: 0.9;">Autonomie</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Adaugă Alimentare -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">➕ Adaugă Alimentare</h3>
-                    <div style="display: grid; gap: 15px;">
-                        <div>
-                            <label>Cantitate (L):</label>
-                            <input type="number" id="fuelAmount" placeholder="Ex: 50">
-                        </div>
-                        <div>
-                            <label>Preț/L (€):</label>
-                            <input type="number" id="fuelPrice" step="0.01" placeholder="Ex: 1.45">
-                        </div>
-                        <div>
-                            <label>Stația (opțional):</label>
-                            <input type="text" id="fuelStation" placeholder="Ex: Shell, OMV, Petrom">
-                        </div>
-                        <button onclick="saveFuelData()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500;">
-                            💾 Salvează Alimentare
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Istoric Alimentări -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Istoric Alimentări</h3>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
-                        <div>
-                            <div style="font-weight: bold; color: #2c3e50;">Shell</div>
-                            <div style="font-size: 12px; color: #666;">Azi, 14:30</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: bold; color: #2c3e50;">45L</div>
-                            <div style="font-size: 12px; color: #666;">€66.60</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
-                        <div>
-                            <div style="font-weight: bold; color: #2c3e50;">OMV</div>
-                            <div style="font-size: 12px; color: #666;">Ieri, 09:15</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: bold; color: #2c3e50;">52L</div>
-                            <div style="font-size: 12px; color: #666;">€73.84</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
-                        <div>
-                            <div style="font-weight: bold; color: #2c3e50;">Petrom</div>
-                            <div style="font-size: 12px; color: #666;">18 Dec, 16:45</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-weight: bold; color: #2c3e50;">48L</div>
-                            <div style="font-size: 12px; color: #666;">€69.60</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Statistici -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📊 Statistici săptămâna aceasta</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px solid #3498db;">
-                            <div style="font-size: 24px; font-weight: bold; color: #3498db;">247L</div>
-                            <div style="font-size: 12px; color: #666;">Total alimentat</div>
-                        </div>
-                        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e74c3c;">
-                            <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">€358</div>
-                            <div style="font-size: 12px; color: #666;">Cost total</div>
-                        </div>
-                    </div>
-                    <div style="font-size: 14px; line-height: 1.6;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>📈 Consum mediu:</span>
-                            <span style="font-weight: bold;">8.2L/100km</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>💰 Preț mediu:</span>
-                            <span style="font-weight: bold;">€1.45/L</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>🛣️ Distanță parcursă:</span>
-                            <span style="font-weight: bold;">3,012 km</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- Start Program Button -->
+            <div class="control-grid" id="startButton">
+            <button class="control-btn btn-start" onclick="startProgram()">Start Program</button>
             </div>
 
-            <!-- Reports Page -->
-            <div class="page" id="pageReports">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">📊 Rapoarte și Istoric</h2>
-                
-                <!-- Program Curent -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">🚛 Program Curent</h3>
-                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #f44336;"></div>
-                            <span style="font-weight: bold;">Oprit</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-                            <div>
-                                <div style="color: #666; margin-bottom: 5px;">Început la:</div>
-                                <div style="font-weight: bold;" id="reportStartTime">--:--</div>
-                            </div>
-                            <div>
-                                <div style="color: #666; margin-bottom: 5px;">Activitate curentă:</div>
-                                <div style="font-weight: bold;" id="reportCurrentActivity">Nicio activitate</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                        <div style="font-weight: bold; margin-bottom: 10px;">⏱️ Timp astăzi</div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>🚗 Conducere:</span>
-                                <span style="font-weight: bold;" id="reportDriving">00:00:00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>☕ Pauze:</span>
-                                <span style="font-weight: bold;" id="reportBreaks">00:00:00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>🔧 Lucru:</span>
-                                <span style="font-weight: bold;" id="reportWork">00:00:00</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>📋 Altele:</span>
-                                <span style="font-weight: bold;" id="reportOther">00:00:00</span>
-                            </div>
-                        </div>
-                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                            <span>⏱️ Total:</span>
-                            <span id="reportTotal">00:00:00</span>
-                        </div>
-                    </div>
+            <!-- Control Buttons -->
+            <div class="control-buttons" id="controlButtons">
+            <div class="control-grid">
+                <button class="control-btn" id="btnDriving" onclick="setActivity('driving', 'Condus', this)">🚗 Condus</button>
+                <button class="control-btn" id="btnBreak" onclick="setActivity('break', 'Pauză', this)">☕ Pauză</button>
+                <button class="control-btn" id="btnWork" onclick="setActivity('work', 'Lucru', this)">🔧 Lucru</button>
+                <button class="control-btn" id="btnOther" onclick="setActivity('other', 'Altele', this)">📋 Altele</button>
+                <button class="control-btn" onclick="endProgram()" style="background: #e74c3c; border-color: #e74c3c; color:white;">⏹️ Termină Program</button>
+            </div>
+            </div>
+        </div> <!-- ✅ închidere corectă .controls -->
+
+        <!-- Progress Overview -->
+        <div class="card">
+            <h3 class="card-title">Status Zilnic</h3>
+            <div class="progress-ring-container">
+            <div class="progress-ring">
+                <div class="progress-circle" id="drivingProgress">
+                <div class="progress-inner">
+                    <span id="drivingPercentage">0%</span>
+                    <span style="font-size: 10px;">Condus</span>
                 </div>
-                
-                <!-- Statistici Astăzi -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📈 Statistici astăzi</h3>
-                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <div style="font-size: 32px; font-weight: bold;" id="statsTotalHours">0.0h</div>
-                            <div style="opacity: 0.9;">Total astăzi</div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
-                            <div>
-                                <div style="font-size: 18px; font-weight: bold;" id="statsDrivingPercent">0%</div>
-                                <div style="font-size: 12px; opacity: 0.9;">Conducere</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 18px; font-weight: bold;" id="statsDrivingHours">0.0h</div>
-                                <div style="font-size: 12px; opacity: 0.9;">La volan</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 18px; font-weight: bold;" id="statsBreakHours">0.0h</div>
-                                <div style="font-size: 12px; opacity: 0.9;">Pauze</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Conformitate Legală -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">⚖️ Conformitate legală</h3>
-                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60;"></div>
-                            <span style="font-weight: bold; color: #27ae60;">Conformitate bună</span>
-                        </div>
-                        
-                        <div style="margin-bottom: 15px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px;">
-                                <span>Timp conducere astăzi:</span>
-                                <span style="font-weight: bold;">0.0h / 9h</span>
-                            </div>
-                            <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
-                                <div style="background: #27ae60; height: 100%; width: 0%; transition: width 0.3s;"></div>
-                            </div>
-                        </div>
-                        
-                        <div style="font-size: 14px; color: #666;">
-                            <div>⏰ Timp rămas: <strong>9.0h</strong></div>
-                            <div>🚛 Pauză obligatorie la fiecare 4.5h</div>
-                            <div>📅 Odihnă săptămânală: 45h consecutiv</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Export Rapoarte -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">📤 Exportă rapoarte</h3>
-                    <div style="display: grid; gap: 10px;">
-                        <button onclick="exportToPDF()" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
-                            📄 Export PDF zilnic
-                        </button>
-                        <button onclick="exportToExcel()" style="background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
-                            📊 Export Excel săptămânal
-                        </button>
-                        <button onclick="sendEmail()" style="background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
-                            📧 Trimite raport email
-                        </button>
-                        <button onclick="printReport()" style="background: #9b59b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">
-                            🖨️ Printează raport
-                        </button>
-                    </div>
                 </div>
             </div>
-
-            <!-- Settings Page -->
-            <div class="page" id="pageSettings">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">⚙️ Setări</h2>
-                
-                <!-- Informații Șofer -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">👤 Informații șofer</h3>
-                    <div style="display: grid; gap: 15px;">
-                        <div>
-                            <label>Nume șofer:</label>
-                            <input type="text" id="settingDriverName" placeholder="Introduceți numele">
-                        </div>
-                        <div>
-                            <label>Număr camion:</label>
-                            <input type="text" id="settingTruckNumber" placeholder="Ex: 001">
-                        </div>
-                    </div>
+            <div class="progress-ring">
+                <div class="progress-circle" id="breakProgress">
+                <div class="progress-inner">
+                    <span id="breakPercentage">0%</span>
+                    <span style="font-size: 10px;">Pauze</span>
                 </div>
-                
-                <!-- Preferințe Aplicație -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">🎛️ Preferințe aplicație</h3>
-                    <div style="display: grid; gap: 15px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span>🌙 Mod întunecat</span>
-                            <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span>🎤 Control vocal</span>
-                            <input type="checkbox" id="voiceControlToggle">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span>🔊 Alerte sonore</span>
-                            <input type="checkbox" id="soundAlertsToggle" checked>
-                        </div>
-                    </div>
                 </div>
-                
-                <!-- Salvează Setări -->
-                <div class="card">
-                    <button onclick="saveSettings()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; width: 100%;">
-                        💾 Salvează setările
-                    </button>
+            </div>
+            <div class="progress-ring">
+                <div class="progress-circle" id="workProgress">
+                <div class="progress-inner">
+                    <span id="workPercentage">0%</span>
+                    <span style="font-size: 10px;">Alte</span>
                 </div>
-                
-                <!-- Informații Aplicație -->
-                <div class="card">
-                    <h3 style="color: #2c3e50; margin-bottom: 15px;">ℹ️ Despre aplicație</h3>
-                    <div style="font-size: 14px; color: #666; line-height: 1.6;">
-                        <div><strong>Driver Support Pro</strong></div>
-                        <div>Versiunea: 1.0.0</div>
-                        <div>Aplicație PWA pentru șoferi profesioniști</div>
-                        <div style="margin-top: 10px;">
-                            <div>📱 Funcții offline disponibile</div>
-                            <div>🗺️ GPS și navigație</div>
-                            <div>⛽ Management combustibil</div>
-                            <div>📊 Rapoarte automate</div>
-                        </div>
-                    </div>
                 </div>
+            </div>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+            <div style="font-size: 14px; color: #7f8c8d;">Timp total program</div>
+            <div style="font-size: 20px; font-weight: bold;" id="totalProgramTime">00:00:00</div>
             </div>
         </div>
 
+        <div class="location-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 18px;">📍 Locația Curentă</h3>
+            <button onclick="refreshLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;">🔄</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" id="currentLocation">Se obține locația...</div>
+            <div style="font-size: 12px; opacity: 0.9;">Ultimul update: <span id="locationLastUpdate">--:--</span></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-size: 12px; opacity: 0.8;">Viteză curentă</div>
+                <div style="font-size: 18px; font-weight: bold;" id="currentSpeed">0 km/h</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="shareCurrentLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">📤 Trimite</button>
+                <button onclick="openLocationInMaps()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🗺️ Maps</button>
+            </div>
+            </div>
+        </div>
+
+        <div class="weather-card" style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="display: none; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-size: 24px; font-weight: bold; color: #2c3e50;" id="weatherTemp">--°C</div>
+                <div style="font-size: 14px; color: #7f8c8d;" id="weatherDesc">Se încarcă...</div>
+            </div>
+            <div style="font-size: 36px;">🌤️</div>
+            </div>
+        </div>
+        </div>
+
+        <!-- GPS Page -->
+        <div class="page" id="pageGPS">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">🗺️ GPS & Navigație</h2>
+        <div id="gpsContent">
+            <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 18px; color: #666;">Se încarcă datele GPS...</div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Fuel Page -->
+        <div class="page" id="pageFuel">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">⛽ Management Combustibil</h2>
+        <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 15px; font-size: 20px;">⛽ Status Combustibil</h3>
+            <div style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 15px;">76% • 380L</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                <div style="font-size: 24px; font-weight: bold;">8.2L</div>
+                <div style="font-size: 12px; opacity: 0.9;">Consum/100km</div>
+            </div>
+            <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                <div style="font-size: 24px; font-weight: bold;">520km</div>
+                <div style="font-size: 12px; opacity: 0.9;">Autonomie</div>
+            </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">➕ Adaugă Alimentare</h3>
+            <div style="display: grid; gap: 15px;">
+            <div>
+                <label>Cantitate (L):</label>
+                <input type="number" id="fuelAmount" placeholder="Ex: 50">
+            </div>
+            <div>
+                <label>Preț/L (€):</label>
+                <input type="number" id="fuelPrice" step="0.01" placeholder="Ex: 1.45">
+            </div>
+            <div>
+                <label>Stația (opțional):</label>
+                <input type="text" id="fuelStation" placeholder="Ex: Shell, OMV, Petrom">
+            </div>
+            <button onclick="saveFuelData()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500;">💾 Salvează Alimentare</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Istoric Alimentări</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+            <div>
+                <div style="font-weight: bold; color: #2c3e50;">Shell</div>
+                <div style="font-size: 12px; color: #666;">Azi, 14:30</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: bold; color: #2c3e50;">45L</div>
+                <div style="font-size: 12px; color: #666;">€66.60</div>
+            </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+            <div>
+                <div style="font-weight: bold; color: #2c3e50;">OMV</div>
+                <div style="font-size: 12px; color: #666;">Ieri, 09:15</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: bold; color: #2c3e50;">52L</div>
+                <div style="font-size: 12px; color: #666;">€73.84</div>
+            </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            <div>
+                <div style="font-weight: bold; color: #2c3e50;">Petrom</div>
+                <div style="font-size: 12px; color: #666;">18 Dec, 16:45</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: bold; color: #2c3e50;">48L</div>
+                <div style="font-size: 12px; color: #666;">€69.60</div>
+            </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">📊 Statistici săptămâna aceasta</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px solid #3498db;">
+                <div style="font-size: 24px; font-weight: bold; color: #3498db;">247L</div>
+                <div style="font-size: 12px; color: #666;">Total alimentat</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e74c3c;">
+                <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">€358</div>
+                <div style="font-size: 12px; color: #666;">Cost total</div>
+            </div>
+            </div>
+            <div style="font-size: 14px; line-height: 1.6;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>📈 Consum mediu:</span>
+                <span style="font-weight: bold;">8.2L/100km</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>💰 Preț mediu:</span>
+                <span style="font-weight: bold;">€1.45/L</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>🛣️ Distanță parcursă:</span>
+                <span style="font-weight: bold;">3,012 km</span>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div class="page" id="pageReports">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">📊 Rapoarte și Istoric</h2>
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">🚛 Program Curent</h3>
+            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #f44336;"></div>
+                <span style="font-weight: bold;">Oprit</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                <div>
+                <div style="color: #666; margin-bottom: 5px;">Început la:</div>
+                <div style="font-weight: bold;" id="reportStartTime">--:--</div>
+                </div>
+                <div>
+                <div style="color: #666; margin-bottom: 5px;">Activitate curentă:</div>
+                <div style="font-weight: bold;" id="reportCurrentActivity">Nicio activitate</div>
+                </div>
+            </div>
+            </div>
+            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+            <div style="font-weight: bold; margin-bottom: 10px;">⏱️ Timp astăzi</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                <div style="display: flex; justify-content: space-between;">
+                <span>🚗 Conducere:</span>
+                <span style="font-weight: bold;" id="reportDriving">00:00:00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                <span>☕ Pauze:</span>
+                <span style="font-weight: bold;" id="reportBreaks">00:00:00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                <span>🔧 Lucru:</span>
+                <span style="font-weight: bold;" id="reportWork">00:00:00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                <span>📋 Altele:</span>
+                <span style="font-weight: bold;" id="reportOther">00:00:00</span>
+                </div>
+            </div>
+            <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>⏱️ Total:</span>
+                <span id="reportTotal">00:00:00</span>
+            </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">📈 Statistici astăzi</h3>
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 32px; font-weight: bold;" id="statsTotalHours">0.0h</div>
+                <div style="opacity: 0.9;">Total astăzi</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
+                <div>
+                <div style="font-size: 18px; font-weight: bold;" id="statsDrivingPercent">0%</div>
+                <div style="font-size: 12px; opacity: 0.9;">Conducere</div>
+                </div>
+                <div>
+                <div style="font-size: 18px; font-weight: bold;" id="statsDrivingHours">0.0h</div>
+                <div style="font-size: 12px; opacity: 0.9;">La volan</div>
+                </div>
+                <div>
+                <div style="font-size: 18px; font-weight: bold;" id="statsBreakHours">0.0h</div>
+                <div style="font-size: 12px; opacity: 0.9;">Pauze</div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">⚖️ Conformitate legală</h3>
+            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60;"></div>
+                <span style="font-weight: bold; color: #27ae60;">Conformitate bună</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px;">
+                <span>Timp conducere astăzi:</span>
+                <span style="font-weight: bold;">0.0h / 9h</span>
+                </div>
+                <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
+                <div style="background: #27ae60; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+            </div>
+            <div style="font-size: 14px; color: #666;">
+                <div>⏰ Timp rămas: <strong>9.0h</strong></div>
+                <div>🚛 Pauză obligatorie la fiecare 4.5h</div>
+                <div>📅 Odihnă săptămânală: 45h consecutiv</div>
+            </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">📤 Exportă rapoarte</h3>
+            <div style="display: grid; gap: 10px;">
+            <button onclick="exportToPDF()" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📄 Export PDF zilnic</button>
+            <button onclick="exportToExcel()" style="background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📊 Export Excel săptămânal</button>
+            <button onclick="sendEmail()" style="background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📧 Trimite raport email</button>
+            <button onclick="printReport()" style="background: #9b59b6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">🖨️ Printează raport</button>
+            </div>
+        </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page" id="pageSettings">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">⚙️ Setări</h2>
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">👤 Informații șofer</h3>
+            <div style="display: grid; gap: 15px;">
+            <div>
+                <label>Nume șofer:</label>
+                <input type="text" id="settingDriverName" placeholder="Introduceți numele">
+            </div>
+            <div>
+                <label>Număr camion:</label>
+                <input type="text" id="settingTruckNumber" placeholder="Ex: 001">
+            </div>
+            </div>
+        </div>
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">🎛️ Preferințe aplicație</h3>
+            <div style="display: grid; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>🌙 Mod întunecat</span>
+                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>🎤 Control vocal</span>
+                <input type="checkbox" id="voiceControlToggle">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>🔊 Alerte sonore</span>
+                <input type="checkbox" id="soundAlertsToggle" checked>
+            </div>
+            </div>
+        </div>
+        <div class="card">
+            <button onclick="saveSettings()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; width: 100%;">💾 Salvează setările</button>
+        </div>
+        <div class="card">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">ℹ️ Despre aplicație</h3>
+            <div style="font-size: 14px; color: #666; line-height: 1.6;">
+            <div><strong>Driver Support Pro</strong></div>
+            <div>Versiunea: 1.0.0</div>
+            <div>Aplicație PWA pentru șoferi profesioniști</div>
+            <div style="margin-top: 10px;">
+                <div>📱 Funcții offline disponibile</div>
+                <div>🗺️ GPS și navigație</div>
+                <div>⛽ Management combustibil</div>
+                <div>📊 Rapoarte automate</div>
+            </div>
+            </div>
+        </div>
+        </div>
+        
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <div class="nav-grid">
