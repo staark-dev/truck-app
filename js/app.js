@@ -220,15 +220,24 @@ class DriverApp {
         this.showToast('🔄 Permisiunile au fost resetate');
     }
 
-    // Add this function to be called from GPS buttons
-    async requestLocationPermission() {
+    // Reactivate GPS - called from GPS page buttons
+    async reactivateGPS() {
         // Reset location permission state to force re-asking
         const state = this.getPermissionsState();
         state.location = { asked: false, granted: false };
         localStorage.setItem('driverapp_permissions', JSON.stringify(state));
         
         // Request permission again
-        return this.requestLocationPermission();
+        const granted = await this.requestLocationPermission();
+        
+        if (granted) {
+            // Reload GPS page content
+            setTimeout(() => {
+                this.loadGPSPage();
+            }, 500);
+        }
+        
+        return granted;
     }
 
     async requestLocationPermission() {
@@ -455,11 +464,100 @@ class DriverApp {
             if (this.alertSystem && typeof this.alertSystem.initialize === 'function') {
                 await this.alertSystem.initialize();
             }
+            
+            // Initialize location for home page
+            this.initializeHomePageLocation();
         } catch (error) {
             console.warn('⚠️ Some services failed to initialize:', error);
         }
         
         this.updateLoadingProgress(80, 'Finalizez inițializarea...');
+    }
+
+    initializeHomePageLocation() {
+        // Get initial location for home page
+        this.updateHomePageLocation();
+        
+        // Set up periodic updates for home page location (every 30 seconds)
+        setInterval(() => {
+            if (this.currentTab === 'program') {
+                this.updateHomePageLocation();
+            }
+        }, 30000);
+    }
+
+    async updateHomePageLocation() {
+        try {
+            const locationData = await this.getRealLocationData();
+            this.currentLocation = locationData;
+            
+            // Update location display on home page
+            const locationDisplay = document.getElementById('currentLocation');
+            const lastUpdateDisplay = document.getElementById('locationLastUpdate');
+            const speedDisplay = document.getElementById('currentSpeed');
+            
+            if (locationDisplay) {
+                // Extract city/area from address
+                const parts = locationData.address.split(', ');
+                const cityArea = parts.length > 1 ? parts[parts.length - 2] + ', ' + parts[parts.length - 1] : locationData.address;
+                locationDisplay.textContent = cityArea;
+            }
+            
+            if (lastUpdateDisplay) {
+                lastUpdateDisplay.textContent = this.formatTime(locationData.timestamp);
+            }
+            
+            if (speedDisplay) {
+                const speed = locationData.speed ? Math.round(locationData.speed * 3.6) : 0;
+                speedDisplay.textContent = `${speed} km/h`;
+            }
+            
+            // Update weather based on location
+            this.updateWeatherForLocation(locationData);
+            
+            console.log('📍 Home page location updated');
+        } catch (error) {
+            console.warn('⚠️ Failed to update home page location:', error);
+            
+            // Show fallback location
+            const locationDisplay = document.getElementById('currentLocation');
+            if (locationDisplay) {
+                locationDisplay.textContent = 'Locație indisponibilă';
+            }
+        }
+    }
+
+    async updateWeatherForLocation(locationData) {
+        try {
+            // Use real coordinates for weather API (if you have a weather API key)
+            // For now, we'll use a simulated weather update based on location
+            const weatherTemp = document.getElementById('weatherTemp');
+            const weatherDesc = document.getElementById('weatherDesc');
+            
+            if (weatherTemp && weatherDesc) {
+                // Simulate weather data with some variation based on location
+                const lat = locationData.latitude;
+                const temperature = Math.round(15 + Math.sin(lat * Math.PI / 180) * 10 + Math.random() * 5);
+                
+                const weatherConditions = [
+                    '☀️ Însorit', 
+                    '⛅ Parțial înnorat', 
+                    '☁️ Înnorat', 
+                    '🌧️ Ploaie ușoară'
+                ];
+                
+                const condition = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+                
+                // Extract city from address
+                const cityParts = locationData.address.split(', ');
+                const city = cityParts.length > 1 ? cityParts[cityParts.length - 2] : 'Locația curentă';
+                
+                weatherTemp.textContent = `${temperature}°C`;
+                weatherDesc.textContent = `${condition} • ${city}`;
+            }
+        } catch (error) {
+            console.warn('⚠️ Weather update failed:', error);
+        }
     }
 
     startPeriodicUpdates() {
@@ -1066,7 +1164,7 @@ class DriverApp {
                 </div>
                 
                 <div style="display: grid; gap: 10px;">
-                    <button class="control-btn" onclick="app.requestLocationPermission()">🔄 Reactivează GPS</button>
+                    <button class="control-btn" onclick="app.reactivateGPS()">🔄 Reactivează GPS</button>
                     <button class="control-btn" onclick="app.showToast('Setări GPS...')">⚙️ Setări GPS</button>
                 </div>
             `;
@@ -1731,30 +1829,106 @@ class DriverApp {
     }
 
     async loadWeatherData() {
+        // This will be called initially, then updated by location updates
         const weatherTemp = document.getElementById('weatherTemp');
         const weatherDesc = document.getElementById('weatherDesc');
         
         if (!weatherTemp || !weatherDesc) return;
         
         try {
-            // Simulate weather API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Mock weather data
-            const weather = {
-                temperature: Math.round(Math.random() * 20 + 5),
-                description: ['☀️ Însorit', '☁️ Înnorat', '🌧️ Ploios', '❄️ Ninsoare'][Math.floor(Math.random() * 4)],
-                location: 'Stockholm'
-            };
-            
-            weatherTemp.textContent = `${weather.temperature}°C`;
-            weatherDesc.textContent = `${weather.description} • ${weather.location}`;
-            
-            console.log('🌤️ Weather data loaded');
+            // Try to get location-based weather
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        // Get address for weather location
+                        const address = await this.reverseGeocode(lat, lon);
+                        const cityParts = address.split(', ');
+                        const city = cityParts.length > 1 ? cityParts[cityParts.length - 2] : 'Locația curentă';
+                        
+                        // Simulate weather based on coordinates
+                        const temperature = Math.round(15 + Math.sin(lat * Math.PI / 180) * 10 + Math.random() * 5);
+                        const conditions = ['☀️ Însorit', '⛅ Parțial înnorat', '☁️ Înnorat', '🌧️ Ploaie ușoară'];
+                        const condition = conditions[Math.floor(Math.random() * conditions.length)];
+                        
+                        weatherTemp.textContent = `${temperature}°C`;
+                        weatherDesc.textContent = `${condition} • ${city}`;
+                        
+                        console.log('🌤️ Weather data loaded with real location');
+                    },
+                    (error) => {
+                        // Fallback to mock weather if location fails
+                        this.loadMockWeather(weatherTemp, weatherDesc);
+                    },
+                    { timeout: 5000 }
+                );
+            } else {
+                this.loadMockWeather(weatherTemp, weatherDesc);
+            }
         } catch (error) {
             console.error('❌ Weather data failed to load:', error);
-            weatherTemp.textContent = '--°C';
-            weatherDesc.textContent = 'Informații meteo indisponibile';
+            this.loadMockWeather(weatherTemp, weatherDesc);
+        }
+    }
+
+    loadMockWeather(weatherTemp, weatherDesc) {
+        // Fallback mock weather
+        const weather = {
+            temperature: Math.round(Math.random() * 20 + 5),
+            description: ['☀️ Însorit', '☁️ Înnorat', '🌧️ Ploios', '❄️ Ninsoare'][Math.floor(Math.random() * 4)],
+            location: 'Stockholm'
+        };
+        
+        weatherTemp.textContent = `${weather.temperature}°C`;
+        weatherDesc.textContent = `${weather.description} • ${weather.location}`;
+    }
+
+    // Add function to share current location from home page
+    shareCurrentLocation() {
+        if (!this.currentLocation) {
+            this.showToast('⚠️ Locația nu este disponibilă');
+            return;
+        }
+        
+        const message = `📍 Sunt aici: ${this.currentLocation.address}\n🗺️ Coordonate: ${this.currentLocation.latitude.toFixed(6)}, ${this.currentLocation.longitude.toFixed(6)}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Locația mea curentă',
+                text: message,
+                url: `https://maps.google.com/?q=${this.currentLocation.latitude},${this.currentLocation.longitude}`
+            }).catch(console.error);
+        } else {
+            // Fallback - copy to clipboard
+            const url = `https://maps.google.com/?q=${this.currentLocation.latitude},${this.currentLocation.longitude}`;
+            navigator.clipboard.writeText(url);
+            this.showToast('📋 Link-ul locației a fost copiat!');
+        }
+    }
+
+    // Add function to open location in maps
+    openLocationInMaps() {
+        if (!this.currentLocation) {
+            this.showToast('⚠️ Locația nu este disponibilă');
+            return;
+        }
+        
+        const url = `https://maps.google.com/?q=${this.currentLocation.latitude},${this.currentLocation.longitude}`;
+        window.open(url, '_blank');
+        this.showToast('🗺️ Deschid în Google Maps...');
+    }
+
+    // Add function to refresh location manually
+    async refreshLocation() {
+        this.showToast('🔄 Actualizez locația...');
+        
+        try {
+            await this.updateHomePageLocation();
+            this.showToast('✅ Locația a fost actualizată');
+        } catch (error) {
+            this.showToast('❌ Nu pot actualiza locația');
         }
     }
 
@@ -1921,6 +2095,25 @@ function hideAlert() {
     const alertPanel = document.getElementById('alertPanel');
     if (alertPanel) {
         alertPanel.classList.remove('show');
+    }
+}
+
+// Location functions for home page
+function shareCurrentLocation() {
+    if (app && typeof app.shareCurrentLocation === 'function') {
+        app.shareCurrentLocation();
+    }
+}
+
+function openLocationInMaps() {
+    if (app && typeof app.openLocationInMaps === 'function') {
+        app.openLocationInMaps();
+    }
+}
+
+function refreshLocation() {
+    if (app && typeof app.refreshLocation === 'function') {
+        app.refreshLocation();
     }
 }
 
