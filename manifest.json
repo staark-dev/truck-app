@@ -3,12 +3,12 @@
   "short_name": "DriverSupport",
   "description": "Aplicație pentru managementul timpilor de lucru conform reglementărilor din Suedia",
   "version": "1.0.0",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#3498db",
   "background_color": "#ffffff",
-  "scope": "/",
+  "scope": "./",
   "lang": "ro",
   "dir": "ltr",
   
@@ -111,7 +111,7 @@
       "name": "Start Program",
       "short_name": "Start",
       "description": "Pornește programul de lucru",
-      "url": "/?action=start",
+      "url": "./?action=start",
       "icons": [
         {
           "src": "icons/shortcut-start.png",
@@ -124,7 +124,7 @@
       "name": "Start Driving",
       "short_name": "Condus",
       "description": "Activează modul condus",
-      "url": "/?action=driving",
+      "url": "./?action=driving",
       "icons": [
         {
           "src": "icons/shortcut-driving.png",
@@ -150,7 +150,7 @@
       "name": "View Reports",
       "short_name": "Rapoarte",
       "description": "Vizualizează rapoartele",
-      "url": "/?page=reports",
+      "url": "./?page=reports",
       "icons": [
         {
           "src": "icons/shortcut-reports.png",
