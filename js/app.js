@@ -1596,9 +1596,55 @@ class DriverApp {
         }
     }
 
-    loadReportsPage() {
+    loadReportsPage = () => {
+    const content = document.querySelector('.content');
+    if (!content) return;
+
+    // Generează HTML pentru conținutul rapoartelor
+    const todayStats = this.getTodayStatsReal();
+    const weekStats  = this.getWeekStats();
+    const monthStats = this.getMonthStats(); // dacă nu îl folosești încă, îl poți elimina
+
+    const reportsInner = `
+        <h2 class="page-title" style="color:#2c3e50; margin-bottom:20px;">📊 Rapoarte și Istoric</h2>
+        ${this.createCurrentProgramCard(todayStats)}
+        ${this.createDailyStatsCard(todayStats)}
+        ${this.createWeeklyStatsCard(weekStats)}
+        ${this.createComplianceCard()}
+        ${this.createExportCard()}
+    `;
+
+    // Caută pagina existentă
+    let reportsPage = document.getElementById('pageReports');
+
+    if (reportsPage) {
+        // ✅ re-randare fără să distrugi nodul (păstrezi poziția, clasa .page, etc.)
+        reportsPage.innerHTML = reportsInner;
+        return;
+    }
+
+    // ♻️ nu există? creează și inserează la locul corect în structură
+    reportsPage = document.createElement('div');
+    reportsPage.className = 'page';
+    reportsPage.id = 'pageReports';
+    reportsPage.innerHTML = reportsInner;
+
+    // inserează după #pageFuel, sau înainte de #pageSettings, altfel la final ca fallback
+    const fuelPage = document.getElementById('pageFuel');
+    const settingsPage = document.getElementById('pageSettings');
+
+    if (fuelPage) {
+        fuelPage.insertAdjacentElement('afterend', reportsPage);
+    } else if (settingsPage) {
+        settingsPage.insertAdjacentElement('beforebegin', reportsPage);
+    } else {
+        content.appendChild(reportsPage);
+    }
+    };
+    /*loadReportsPage() {
         // Always reload reports page content to get fresh data
         let reportsPage = document.getElementById('pageReports');
+
         if (reportsPage) {
             reportsPage.remove();
         }
@@ -1627,7 +1673,7 @@ class DriverApp {
         if (content) {
             content.appendChild(newPage);
         }
-    }
+    }*/
 
     getTodayStatsReal() {
         // Get real stats from timeTracker or calculate from session data
