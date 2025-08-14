@@ -1175,7 +1175,7 @@ class DriverApp {
                     window.app.loadPageContent(tabName);
                 } else {
                     console.log(`Table ${tabName} content has been refresh !`);
-                    window.app.loadPageContent(tabName);
+                    this.loadPageContent(tabName);
                 }
                 
                 // Show toast
