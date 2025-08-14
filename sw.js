@@ -1,5 +1,5 @@
 // Driver Support App - Service Worker
-const CACHE_NAME = 'driver-support-v1.23.5-beta';
+const CACHE_NAME = 'driver-support-v1.028.06';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,7 +8,6 @@ const urlsToCache = [
   '/js/time-tracker.js',
   '/js/location-service.js',
   '/js/alerts.js',
-  '/style.css',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
