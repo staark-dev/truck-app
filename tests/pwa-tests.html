@@ -300,7 +300,18 @@
             </div>
         </div>
     </div>
-
+<!-- include fișierele din ../js/ pentru că pagina e în /tests/ -->
+<script src="../js/data-manager.js"></script>
+<script src="../js/time-tracker.js"></script>
+<script src="../js/location-service.js"></script>
+<script src="../js/alerts.js"></script>
+<script>
+  // expune-le explicit; testele caută pe window
+  window.DataManager     = typeof DataManager     !== 'undefined' ? DataManager     : undefined;
+  window.TimeTracker     = typeof TimeTracker     !== 'undefined' ? TimeTracker     : undefined;
+  window.LocationService = typeof LocationService !== 'undefined' ? LocationService : undefined;
+  window.AlertSystem     = typeof AlertSystem     !== 'undefined' ? AlertSystem     : undefined;
+</script>
     <script>
         // Test Framework
         class PWATestSuite {
