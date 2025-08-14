@@ -47,7 +47,7 @@ jobs:
           echo "🔍 Checking required PWA files..."
           
           # Check required files exist
-          required_files=("./index.html" "./manifest.json" "./sw.js" "../js/app.js")
+          required_files=("index.html" "manifest.json" "sw.js")
           for file in "${required_files[@]}"; do
             if [ ! -f "$file" ]; then
               echo "❌ Missing required file: $file"
@@ -56,6 +56,29 @@ jobs:
               echo "✅ Found: $file"
             fi
           done
+          
+          # Check JavaScript files (flexible location)
+          js_files=("js/app.js" "app.js" "js/main.js" "main.js")
+          js_found=false
+          for file in "${js_files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✅ Found JavaScript: $file"
+              js_found=true
+              break
+            fi
+          done
+          
+          if [ "$js_found" = false ]; then
+            echo "❌ No main JavaScript file found. Looking for:"
+            printf "   - %s\n" "${js_files[@]}"
+            exit 1
+          fi
+          
+          # Check for additional JS files in js/ directory
+          if [ -d "js" ]; then
+            echo "📁 JavaScript files found:"
+            find js -name "*.js" -type f | head -10
+          fi
           
       - name: 🏗️ Create icons if missing
         run: |
@@ -126,13 +149,17 @@ jobs:
       - name: 🧪 Test JavaScript files
         run: |
           echo "🧪 Testing JavaScript syntax..."
-          js_files=(app.js)
           
-          for jsfile in "${js_files[@]}"; do
+          # Test main JS files
+          main_js_files=("js/app.js" "app.js" "js/main.js" "main.js")
+          tested_files=()
+          
+          for jsfile in "${main_js_files[@]}"; do
             if [ -f "$jsfile" ]; then
               echo "Testing: $jsfile"
               if node -c "$jsfile" 2>/dev/null; then
                 echo "✅ $jsfile syntax is valid"
+                tested_files+=("$jsfile")
               else
                 echo "❌ $jsfile has syntax errors"
                 node -c "$jsfile" || true
@@ -140,6 +167,31 @@ jobs:
               fi
             fi
           done
+          
+          # Test additional JS files in js/ directory
+          if [ -d "js" ]; then
+            additional_js_files=$(find js -name "*.js" -type f ! -name "app.js" ! -name "main.js")
+            for jsfile in $additional_js_files; do
+              if [ -f "$jsfile" ]; then
+                echo "Testing additional file: $jsfile"
+                if node -c "$jsfile" 2>/dev/null; then
+                  echo "✅ $jsfile syntax is valid"
+                  tested_files+=("$jsfile")
+                else
+                  echo "⚠️ $jsfile has syntax errors (non-critical)"
+                  node -c "$jsfile" || true
+                  # Don't exit for non-critical files, just warn
+                fi
+              fi
+            done
+          fi
+          
+          if [ ${#tested_files[@]} -eq 0 ]; then
+            echo "❌ No JavaScript files were tested"
+            exit 1
+          else
+            echo "✅ Tested ${#tested_files[@]} JavaScript file(s)"
+          fi
           
       - name: 📦 Create build directory
         run: |
@@ -320,13 +372,23 @@ jobs:
             echo "❌ Service Worker is not accessible"
           fi
           
-          # Test app.js
-          echo "Testing main app file..."
-          if curl -f -s "${SITE_URL}app.js" > /dev/null; then
-            echo "✅ App.js is accessible"
-            echo "App.js size: $(curl -s "${SITE_URL}app.js" | wc -c) bytes"
-          else
-            echo "❌ App.js is not accessible"
+          # Test main JavaScript file
+          echo "Testing main JavaScript file..."
+          js_paths=("js/app.js" "app.js" "js/main.js" "main.js")
+          js_found=false
+          
+          for js_path in "${js_paths[@]}"; do
+            if curl -f -s "${SITE_URL}${js_path}" > /dev/null; then
+              echo "✅ ${js_path} is accessible"
+              echo "File size: $(curl -s "${SITE_URL}${js_path}" | wc -c) bytes"
+              js_found=true
+              break
+            fi
+          done
+          
+          if [ "$js_found" = false ]; then
+            echo "❌ No main JavaScript file is accessible"
+            echo "Tried paths: ${js_paths[*]}"
           fi
 
   lighthouse-audit:
