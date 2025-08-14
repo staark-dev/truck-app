@@ -8,6 +8,8 @@ class DriverApp {
         this.voiceListening = false;
         this.currentTab = 'program';
         this.isInitialized = false;
+        this.locationUpdateInterval = null;
+        this.currentLocation = null;
         
         // Initialize components with error handling
         try {
@@ -172,54 +174,115 @@ class DriverApp {
     }
 
     async requestPermissions() {
-        this.updateLoadingProgress(40, 'Se solicită permisiuni...');
+        this.updateLoadingProgress(40, 'Se verifică permisiunile...');
         
-        // Request location permission
-        await this.requestLocationPermission();
+        // Check if permissions were already requested
+        const permissionsState = this.getPermissionsState();
         
-        // Request notification permission
-        await this.requestNotificationPermission();
+        // Request location permission only if not already handled
+        if (!permissionsState.location.asked) {
+            await this.requestLocationPermission();
+        }
         
-        // Request microphone permission for voice control
-        await this.requestMicrophonePermission();
+        // Request notification permission only if not already handled
+        if (!permissionsState.notifications.asked) {
+            await this.requestNotificationPermission();
+        }
+        
+        // Request microphone permission only if not already handled
+        if (!permissionsState.microphone.asked) {
+            await this.requestMicrophonePermission();
+        }
+    }
+
+    getPermissionsState() {
+        const saved = localStorage.getItem('driverapp_permissions');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        
+        return {
+            location: { asked: false, granted: false },
+            notifications: { asked: false, granted: false },
+            microphone: { asked: false, granted: false }
+        };
+    }
+
+    savePermissionsState(type, granted) {
+        const state = this.getPermissionsState();
+        state[type] = { asked: true, granted: granted };
+        localStorage.setItem('driverapp_permissions', JSON.stringify(state));
+    }
+
+    // Reset permissions - useful for testing or settings reset
+    resetPermissions() {
+        localStorage.removeItem('driverapp_permissions');
+        this.showToast('🔄 Permisiunile au fost resetate');
+    }
+
+    // Add this function to be called from GPS buttons
+    async requestLocationPermission() {
+        // Reset location permission state to force re-asking
+        const state = this.getPermissionsState();
+        state.location = { asked: false, granted: false };
+        localStorage.setItem('driverapp_permissions', JSON.stringify(state));
+        
+        // Request permission again
+        return this.requestLocationPermission();
     }
 
     async requestLocationPermission() {
         return new Promise((resolve) => {
             if (!navigator.geolocation) {
                 console.log('📍 Geolocation not supported');
+                this.savePermissionsState('location', false);
                 resolve(false);
                 return;
             }
             
-            const modal = this.createPermissionModal(
-                '📍 Permisiune Locație',
-                'Această aplicație are nevoie de acces la locația ta pentru a oferi funcții GPS și de navigație.',
-                async () => {
-                    try {
-                        const position = await new Promise((res, rej) => {
-                            navigator.geolocation.getCurrentPosition(res, rej, {
-                                timeout: 10000,
-                                enableHighAccuracy: true
-                            });
-                        });
-                        
-                        console.log('📍 Location permission granted');
-                        this.showToast('✅ Locația a fost activată');
-                        modal.remove();
-                        resolve(true);
-                    } catch (error) {
-                        console.log('📍 Location permission denied');
-                        this.showToast('⚠️ Locația nu este disponibilă');
-                        modal.remove();
-                        resolve(false);
-                    }
+            // Check if already granted
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log('📍 Location permission already granted');
+                    this.savePermissionsState('location', true);
+                    resolve(true);
                 },
-                () => {
-                    console.log('📍 Location permission declined by user');
-                    modal.remove();
-                    resolve(false);
-                }
+                (error) => {
+                    // Permission not granted yet, show modal
+                    const modal = this.createPermissionModal(
+                        '📍 Permisiune Locație',
+                        'Această aplicație are nevoie de acces la locația ta pentru a oferi funcții GPS și de navigație.',
+                        async () => {
+                            try {
+                                const position = await new Promise((res, rej) => {
+                                    navigator.geolocation.getCurrentPosition(res, rej, {
+                                        timeout: 10000,
+                                        enableHighAccuracy: true
+                                    });
+                                });
+                                
+                                console.log('📍 Location permission granted');
+                                this.showToast('✅ Locația a fost activată');
+                                this.savePermissionsState('location', true);
+                                modal.remove();
+                                resolve(true);
+                            } catch (error) {
+                                console.log('📍 Location permission denied');
+                                this.showToast('⚠️ Locația nu este disponibilă');
+                                this.savePermissionsState('location', false);
+                                modal.remove();
+                                resolve(false);
+                            }
+                        },
+                        () => {
+                            console.log('📍 Location permission declined by user');
+                            this.savePermissionsState('location', false);
+                            modal.remove();
+                            resolve(false);
+                        }
+                    );
+                },
+                { timeout: 1000 }
             );
         });
     }
@@ -228,16 +291,19 @@ class DriverApp {
         return new Promise((resolve) => {
             if (!('Notification' in window)) {
                 console.log('🔔 Notifications not supported');
+                this.savePermissionsState('notifications', false);
                 resolve(false);
                 return;
             }
             
             if (Notification.permission === 'granted') {
+                this.savePermissionsState('notifications', true);
                 resolve(true);
                 return;
             }
             
             if (Notification.permission === 'denied') {
+                this.savePermissionsState('notifications', false);
                 resolve(false);
                 return;
             }
@@ -258,16 +324,19 @@ class DriverApp {
                                 icon: '/icon-192.png'
                             });
                         }
+                        this.savePermissionsState('notifications', permission === 'granted');
                         modal.remove();
                         resolve(permission === 'granted');
                     } catch (error) {
                         console.log('🔔 Notification permission error:', error);
+                        this.savePermissionsState('notifications', false);
                         modal.remove();
                         resolve(false);
                     }
                 },
                 () => {
                     console.log('🔔 Notification permission declined by user');
+                    this.savePermissionsState('notifications', false);
                     modal.remove();
                     resolve(false);
                 }
@@ -279,6 +348,7 @@ class DriverApp {
         return new Promise((resolve) => {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 console.log('🎤 Microphone not supported');
+                this.savePermissionsState('microphone', false);
                 resolve(false);
                 return;
             }
@@ -295,17 +365,20 @@ class DriverApp {
                         // Stop the stream immediately
                         stream.getTracks().forEach(track => track.stop());
                         
+                        this.savePermissionsState('microphone', true);
                         modal.remove();
                         resolve(true);
                     } catch (error) {
                         console.log('🎤 Microphone permission denied');
                         this.showToast('⚠️ Microfonul nu este disponibil');
+                        this.savePermissionsState('microphone', false);
                         modal.remove();
                         resolve(false);
                     }
                 },
                 () => {
                     console.log('🎤 Microphone permission declined by user');
+                    this.savePermissionsState('microphone', false);
                     modal.remove();
                     resolve(false);
                 }
@@ -817,6 +890,12 @@ class DriverApp {
     switchTab(element, tabName) {
         console.log(`📱 Switching to tab: ${tabName}`);
         
+        // Stop location updates if leaving GPS tab
+        if (this.currentTab === 'gps' && tabName !== 'gps' && this.locationUpdateInterval) {
+            clearInterval(this.locationUpdateInterval);
+            this.locationUpdateInterval = null;
+        }
+        
         // Remove active class from all nav items
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
@@ -871,35 +950,258 @@ class DriverApp {
     loadGPSPage() {
         const gpsContent = document.getElementById('gpsContent');
         if (gpsContent && gpsContent.innerHTML.includes('Încărcare')) {
-            // Simulate loading GPS content
-            setTimeout(() => {
-                gpsContent.innerHTML = `
-                    <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            // Show loading state
+            gpsContent.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <div>Se obține locația...</div>
+                </div>
+            `;
+            
+            // Get real location data
+            this.getRealLocationData()
+                .then(locationData => {
+                    gpsContent.innerHTML = this.createGPSPageContent(locationData);
+                    // Start location updates
+                    this.startLocationUpdates();
+                })
+                .catch(error => {
+                    console.error('Error getting location:', error);
+                    gpsContent.innerHTML = this.createGPSPageContent(null);
+                });
+        }
+    }
+
+    async getRealLocationData() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error('Geolocation not supported'));
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const coords = position.coords;
+                    
+                    // Get address from coordinates
+                    const address = await this.reverseGeocode(coords.latitude, coords.longitude);
+                    
+                    const locationData = {
+                        latitude: coords.latitude,
+                        longitude: coords.longitude,
+                        accuracy: coords.accuracy,
+                        speed: coords.speed || 0,
+                        heading: coords.heading,
+                        timestamp: new Date(position.timestamp),
+                        address: address,
+                        connected: true
+                    };
+                    
+                    resolve(locationData);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    reject(error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 30000
+                }
+            );
+        });
+    }
+
+    async reverseGeocode(lat, lon) {
+        try {
+            // Using OpenStreetMap Nominatim API (free)
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=16&addressdetails=1`,
+                {
+                    headers: {
+                        'User-Agent': 'DriverSupportApp/1.0'
+                    }
+                }
+            );
+            
+            if (!response.ok) {
+                throw new Error('Geocoding failed');
+            }
+            
+            const data = await response.json();
+            
+            // Extract meaningful address components
+            const address = data.address || {};
+            const parts = [];
+            
+            if (address.road) parts.push(address.road);
+            if (address.house_number) parts.push(address.house_number);
+            if (address.city || address.town || address.village) {
+                parts.push(address.city || address.town || address.village);
+            }
+            if (address.country) parts.push(address.country);
+            
+            return parts.length > 0 ? parts.join(', ') : `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+            
+        } catch (error) {
+            console.error('Reverse geocoding error:', error);
+            return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+        }
+    }
+
+    createGPSPageContent(locationData) {
+        if (!locationData) {
+            return `
+                <div style="background: #ffebee; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #f44336;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 30px; height: 30px; border-radius: 50%; background: #f44336; display: flex; align-items: center; justify-content: center; color: white;">⚠️</div>
+                        <div>
+                            <div style="font-weight: bold;">GPS Deconectat</div>
+                            <div style="font-size: 12px; color: #666;">Verifică permisiunile</div>
+                        </div>
+                    </div>
+                    <div style="color: #666;">
+                        Nu se poate obține locația. Asigură-te că ai permis accesul la locație și că GPS-ul este activat.
+                    </div>
+                </div>
+                
+                <div style="display: grid; gap: 10px;">
+                    <button class="control-btn" onclick="app.requestLocationPermission()">🔄 Reactivează GPS</button>
+                    <button class="control-btn" onclick="app.showToast('Setări GPS...')">⚙️ Setări GPS</button>
+                </div>
+            `;
+        }
+
+        const speed = locationData.speed ? Math.round(locationData.speed * 3.6) : 0; // Convert m/s to km/h
+        const accuracy = Math.round(locationData.accuracy);
+        const lastUpdate = this.formatTime(locationData.timestamp);
+
+        return `
+            <div style="background: #e8f5e8; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <div style="width: 30px; height: 30px; border-radius: 50%; background: #4caf50; display: flex; align-items: center; justify-content: center; color: white;">📍</div>
+                    <div>
+                        <div style="font-weight: bold;">GPS Conectat</div>
+                        <div style="font-size: 12px; color: #666;">Precizie: ±${accuracy}m</div>
+                    </div>
+                </div>
+                <div style="font-weight: bold; margin-bottom: 8px;">Locația Curentă</div>
+                <div style="margin-bottom: 5px;">📍 ${locationData.address}</div>
+                <div style="margin-bottom: 5px;">🕐 Ultimul update: ${lastUpdate}</div>
+                <div style="margin-bottom: 5px;">🚗 Viteză: ${speed} km/h ${speed === 0 ? '(oprit)' : ''}</div>
+                <div style="font-size: 12px; color: #666;">
+                    Coordonate: ${locationData.latitude.toFixed(6)}, ${locationData.longitude.toFixed(6)}
+                </div>
+            </div>
+            
+            <div style="height: 200px; background: linear-gradient(135deg, #74b9ff, #0984e3); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; margin-bottom: 20px; position: relative; overflow: hidden;">
+                <div style="background: rgba(255,255,255,0.1); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                    🗺️
+                </div>
+                <div>HARTĂ GPS</div>
+                <small style="opacity: 0.8;">Locația în timp real</small>
+                <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 15px; font-size: 12px;">
+                    Live
+                </div>
+            </div>
+            
+            <div style="display: grid; gap: 10px;">
+                <button class="control-btn" onclick="app.calculateRoute()">📍 Calculează Ruta</button>
+                <button class="control-btn" onclick="app.findParkingZones()">🅿️ Zone Parcare</button>
+                <button class="control-btn" onclick="app.findGasStations()">⛽ Stații Combustibil</button>
+                <button class="control-btn" onclick="app.shareLocation()">📤 Trimite Locația</button>
+            </div>
+        `;
+    }
+
+    startLocationUpdates() {
+        // Update location every 10 seconds when GPS tab is active
+        if (this.locationUpdateInterval) {
+            clearInterval(this.locationUpdateInterval);
+        }
+
+        this.locationUpdateInterval = setInterval(() => {
+            if (this.currentTab === 'gps') {
+                this.updateGPSData();
+            }
+        }, 10000);
+    }
+
+    async updateGPSData() {
+        try {
+            const locationData = await this.getRealLocationData();
+            this.currentLocation = locationData; // Save current location for sharing
+            
+            const gpsContent = document.getElementById('gpsContent');
+            
+            if (gpsContent && !gpsContent.innerHTML.includes('Încărcare')) {
+                // Update only the status part to avoid full page reload
+                const statusDiv = gpsContent.querySelector('div[style*="background: #e8f5e8"]');
+                if (statusDiv) {
+                    const speed = locationData.speed ? Math.round(locationData.speed * 3.6) : 0;
+                    const accuracy = Math.round(locationData.accuracy);
+                    const lastUpdate = this.formatTime(locationData.timestamp);
+                    
+                    statusDiv.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                            <div style="width: 30px; height: 30px; border-radius: 50%; background: #27ae60; display: flex; align-items: center; justify-content: center; color: white;">📍</div>
+                            <div style="width: 30px; height: 30px; border-radius: 50%; background: #4caf50; display: flex; align-items: center; justify-content: center; color: white;">📍</div>
                             <div>
                                 <div style="font-weight: bold;">GPS Conectat</div>
-                                <div style="font-size: 12px; color: #7f8c8d;">Precizie: ±3m</div>
+                                <div style="font-size: 12px; color: #666;">Precizie: ±${accuracy}m</div>
                             </div>
                         </div>
                         <div style="font-weight: bold; margin-bottom: 8px;">Locația Curentă</div>
-                        <div>📍 E4, Stockholm, Suedia</div>
-                        <div>🕐 Ultimul update: acum 5 sec</div>
-                        <div>🚗 Viteză: 0 km/h (oprit)</div>
-                    </div>
-                    
-                    <div style="height: 200px; background: linear-gradient(135deg, #74b9ff, #0984e3); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-bottom: 20px;">
-                        🗺️ HARTĂ GPS<br>
-                        <small>Locația în timp real</small>
-                    </div>
-                    
-                    <div style="display: grid; gap: 10px;">
-                        <button class="control-btn" onclick="app.showToast('Calculez ruta...')">📍 Calculează Ruta</button>
-                        <button class="control-btn" onclick="app.showToast('Găsesc zone de parcare...')">🅿️ Zone Parcare</button>
-                        <button class="control-btn" onclick="app.showToast('Găsesc stații...')">⛽ Stații Combustibil</button>
-                    </div>
-                `;
-            }, 1000);
+                        <div style="margin-bottom: 5px;">📍 ${locationData.address}</div>
+                        <div style="margin-bottom: 5px;">🕐 Ultimul update: ${lastUpdate}</div>
+                        <div style="margin-bottom: 5px;">🚗 Viteză: ${speed} km/h ${speed === 0 ? '(oprit)' : ''}</div>
+                        <div style="font-size: 12px; color: #666;">
+                            Coordonate: ${locationData.latitude.toFixed(6)}, ${locationData.longitude.toFixed(6)}
+                        </div>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.warn('GPS update failed:', error);
+        }
+    }
+
+    // GPS helper functions
+    calculateRoute() {
+        this.showToast('🗺️ Calculez cea mai bună rută...');
+        // Here you would integrate with a routing service
+        setTimeout(() => {
+            this.showToast('✅ Ruta calculată! Timp estimat: 2h 15min');
+        }, 2000);
+    }
+
+    findParkingZones() {
+        this.showToast('🅿️ Caut zone de parcare în apropiere...');
+        // Here you would search for parking areas
+        setTimeout(() => {
+            this.showToast('✅ Găsite 3 zone de parcare într-un radius de 5km');
+        }, 1500);
+    }
+
+    findGasStations() {
+        this.showToast('⛽ Caut stații de combustibil...');
+        // Here you would search for gas stations
+        setTimeout(() => {
+            this.showToast('✅ Găsite 5 stații într-un radius de 10km');
+        }, 1500);
+    }
+
+    shareLocation() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Locația mea curentă',
+                text: 'Iată unde mă aflu acum:',
+                url: `https://maps.google.com/?q=${this.currentLocation?.latitude},${this.currentLocation?.longitude}`
+            }).catch(console.error);
+        } else {
+            // Fallback - copy to clipboard
+            const url = `https://maps.google.com/?q=${this.currentLocation?.latitude || 0},${this.currentLocation?.longitude || 0}`;
+            navigator.clipboard.writeText(url);
+            this.showToast('📋 Link-ul locației a fost copiat!');
         }
     }
 
@@ -955,59 +1257,348 @@ class DriverApp {
     }
 
     loadReportsPage() {
-        // Create reports page content dynamically
-        const reportsPage = document.getElementById('pageReports');
-        if (!reportsPage) {
-            const newPage = document.createElement('div');
-            newPage.className = 'page';
-            newPage.id = 'pageReports';
+        // Always reload reports page content to get fresh data
+        let reportsPage = document.getElementById('pageReports');
+        if (reportsPage) {
+            reportsPage.remove();
+        }
+        
+        const newPage = document.createElement('div');
+        newPage.className = 'page';
+        newPage.id = 'pageReports';
+        
+        const todayStats = this.getTodayStatsReal();
+        const weekStats = this.getWeekStats();
+        const monthStats = this.getMonthStats();
+        
+        newPage.innerHTML = `
+            <div class="page-content">
+                <h2 class="page-title">Rapoarte și Istoric</h2>
+                
+                ${this.createCurrentProgramCard(todayStats)}
+                ${this.createDailyStatsCard(todayStats)}
+                ${this.createWeeklyStatsCard(weekStats)}
+                ${this.createComplianceCard()}
+                ${this.createExportCard()}
+            </div>
+        `;
+        
+        const content = document.querySelector('.content');
+        if (content) {
+            content.appendChild(newPage);
+        }
+    }
+
+    getTodayStatsReal() {
+        // Get real stats from timeTracker or calculate from session data
+        if (this.timeTracker && typeof this.timeTracker.getTodayStats === 'function') {
+            return this.timeTracker.getTodayStats();
+        }
+        
+        // Fallback calculation
+        const sessionData = this.dataManager.getSessionData();
+        const stats = {
+            driving: 0,
+            break: 0,
+            work: 0,
+            other: 0,
+            totalTime: 0
+        };
+        
+        if (this.programStarted && this.programStartTime) {
+            const now = Date.now();
+            stats.totalTime = now - this.programStartTime.getTime();
             
-            let todayStats = { driving: 0, break: 0, work: 0, other: 0 };
-            if (this.timeTracker && typeof this.timeTracker.getTodayStats === 'function') {
-                todayStats = this.timeTracker.getTodayStats();
+            // Estimate based on current activity
+            if (this.currentActivity) {
+                const activityTime = now - this.activityStartTime.getTime();
+                stats[this.currentActivity.type] = activityTime;
             }
-            
-            newPage.innerHTML = `
-                <div class="page-content">
-                    <h2 class="page-title">Rapoarte și Istoric</h2>
-                    
-                    <div class="card">
-                        <h3 class="card-title">Detalii Program Curent</h3>
-                        <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
-                                <span style="font-weight: 500; color: #7f8c8d;">Program început la:</span>
-                                <span style="font-weight: bold; color: #2c3e50;">${this.programStartTime ? this.formatTime(this.programStartTime) : '-'}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
-                                <span style="font-weight: 500; color: #7f8c8d;">Conducere:</span>
-                                <span style="font-weight: bold; color: #2c3e50;">${this.formatDuration(todayStats.driving)}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
-                                <span style="font-weight: 500; color: #7f8c8d;">Pauze:</span>
-                                <span style="font-weight: bold; color: #2c3e50;">${this.formatDuration(todayStats.break)}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                                <span style="font-weight: 500; color: #7f8c8d;">Alte activități:</span>
-                                <span style="font-weight: bold; color: #2c3e50;">${this.formatDuration(todayStats.work + todayStats.other)}</span>
-                            </div>
-                        </div>
+        }
+        
+        return stats;
+    }
+
+    getWeekStats() {
+        // Simulate weekly stats (in a real app, this would come from stored data)
+        return {
+            totalHours: 38.5,
+            drivingHours: 28.2,
+            breakHours: 6.8,
+            otherHours: 3.5,
+            daysWorked: 5,
+            avgDayHours: 7.7
+        };
+    }
+
+    getMonthStats() {
+        // Simulate monthly stats
+        return {
+            totalHours: 162.3,
+            drivingHours: 118.5,
+            breakHours: 28.9,
+            otherHours: 14.9,
+            daysWorked: 21,
+            avgDayHours: 7.7
+        };
+    }
+
+    createCurrentProgramCard(stats) {
+        const programStatus = this.programStarted ? 'Activ' : 'Oprit';
+        const startTime = this.programStartTime ? this.formatTime(this.programStartTime) : '-';
+        const currentActivity = this.currentActivity ? this.currentActivity.name : 'Nicio activitate';
+        
+        return `
+            <div class="card">
+                <h3 class="card-title">Program Curent</h3>
+                <div style="background: ${this.programStarted ? '#e8f5e8' : '#ffebee'}; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: ${this.programStarted ? '#4caf50' : '#f44336'};"></div>
+                        <span style="font-weight: bold;">${programStatus}</span>
                     </div>
-                    
-                    <div class="card">
-                        <h3 class="card-title">Exportă Rapoarte</h3>
-                        <div style="display: grid; gap: 10px;">
-                            <button class="control-btn" onclick="app.exportToPDF()">📄 Export PDF</button>
-                            <button class="control-btn" onclick="app.exportToExcel()">📊 Export Excel</button>
-                            <button class="control-btn" onclick="app.sendEmail()">📧 Trimite email</button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                        <div>
+                            <div style="color: #666; margin-bottom: 5px;">Început la:</div>
+                            <div style="font-weight: bold;">${startTime}</div>
+                        </div>
+                        <div>
+                            <div style="color: #666; margin-bottom: 5px;">Activitate curentă:</div>
+                            <div style="font-weight: bold;">${currentActivity}</div>
                         </div>
                     </div>
                 </div>
-            `;
-            const content = document.querySelector('.content');
-            if (content) {
-                content.appendChild(newPage);
-            }
+                
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <div style="font-weight: bold; margin-bottom: 10px;">Timp Today</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>🚗 Conducere:</span>
+                            <span style="font-weight: bold;">${this.formatDuration(stats.driving)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>☕ Pauze:</span>
+                            <span style="font-weight: bold;">${this.formatDuration(stats.break)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>🔧 Lucru:</span>
+                            <span style="font-weight: bold;">${this.formatDuration(stats.work)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>📋 Altele:</span>
+                            <span style="font-weight: bold;">${this.formatDuration(stats.other)}</span>
+                        </div>
+                    </div>
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                        <span>⏱️ Total:</span>
+                        <span>${this.formatDuration(stats.totalTime || stats.driving + stats.break + stats.work + stats.other)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    createDailyStatsCard(stats) {
+        const totalHours = (stats.totalTime || stats.driving + stats.break + stats.work + stats.other) / (1000 * 60 * 60);
+        const drivingPercent = stats.totalTime > 0 ? Math.round((stats.driving / stats.totalTime) * 100) : 0;
+        
+        return `
+            <div class="card">
+                <h3 class="card-title">Statistici Ziua Curentă</h3>
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 32px; font-weight: bold;">${totalHours.toFixed(1)}h</div>
+                        <div style="opacity: 0.9;">Total astăzi</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
+                        <div>
+                            <div style="font-size: 18px; font-weight: bold;">${drivingPercent}%</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Conducere</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 18px; font-weight: bold;">${Math.round((stats.driving / (1000 * 60 * 60)) * 10) / 10}h</div>
+                            <div style="font-size: 12px; opacity: 0.9;">La volan</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 18px; font-weight: bold;">${Math.round((stats.break / (1000 * 60 * 60)) * 10) / 10}h</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Pauze</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    createWeeklyStatsCard(weekStats) {
+        return `
+            <div class="card">
+                <h3 class="card-title">Statistici Săptămâna Aceasta</h3>
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #3498db;">${weekStats.totalHours}h</div>
+                            <div style="font-size: 12px; color: #666;">Total săptămână</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #27ae60;">${weekStats.daysWorked}</div>
+                            <div style="font-size: 12px; color: #666;">Zile lucrate</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.6;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>🚗 Timp conducere:</span>
+                            <span style="font-weight: bold;">${weekStats.drivingHours}h</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>☕ Timp pauze:</span>
+                            <span style="font-weight: bold;">${weekStats.breakHours}h</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>📊 Medie pe zi:</span>
+                            <span style="font-weight: bold;">${weekStats.avgDayHours}h</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    createComplianceCard() {
+        const drivingTime = this.getTodayStatsReal().driving / (1000 * 60 * 60); // hours
+        const maxDrivingTime = 9; // EU regulation: max 9 hours/day
+        const remainingTime = Math.max(0, maxDrivingTime - drivingTime);
+        const compliancePercent = Math.min(100, (drivingTime / maxDrivingTime) * 100);
+        
+        let statusColor = '#27ae60';
+        let statusText = 'Conformitate bună';
+        
+        if (compliancePercent > 80) {
+            statusColor = '#f39c12';
+            statusText = 'Atenție - aproape de limită';
         }
+        if (compliancePercent >= 100) {
+            statusColor = '#e74c3c';
+            statusText = 'Limită depășită!';
+        }
+        
+        return `
+            <div class="card">
+                <h3 class="card-title">Conformitate Legală</h3>
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: ${statusColor};"></div>
+                        <span style="font-weight: bold; color: ${statusColor};">${statusText}</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px;">
+                            <span>Timp conducere astăzi:</span>
+                            <span style="font-weight: bold;">${drivingTime.toFixed(1)}h / ${maxDrivingTime}h</span>
+                        </div>
+                        <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
+                            <div style="background: ${statusColor}; height: 100%; width: ${Math.min(100, compliancePercent)}%; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 14px; color: #666;">
+                        <div>⏰ Timp rămas: <strong>${remainingTime.toFixed(1)}h</strong></div>
+                        <div>🚛 Pauză obligatorie la fiecare 4.5h</div>
+                        <div>📅 Odihnă săptămânală: 45h consecutiv</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    createExportCard() {
+        return `
+            <div class="card">
+                <h3 class="card-title">Exportă Rapoarte</h3>
+                <div style="display: grid; gap: 10px;">
+                    <button class="control-btn" onclick="app.exportToPDF()" style="background: #e74c3c; border-color: #e74c3c;">
+                        📄 Export PDF Zilnic
+                    </button>
+                    <button class="control-btn" onclick="app.exportToExcel()" style="background: #27ae60; border-color: #27ae60;">
+                        📊 Export Excel Săptămânal
+                    </button>
+                    <button class="control-btn" onclick="app.sendEmail()" style="background: #3498db; border-color: #3498db;">
+                        📧 Trimite Raport Email
+                    </button>
+                    <button class="control-btn" onclick="app.printReport()" style="background: #9b59b6; border-color: #9b59b6;">
+                        🖨️ Printează Raport
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    printReport() {
+        this.showToast('🖨️ Pregătesc raportul pentru print...');
+        
+        setTimeout(() => {
+            const printContent = this.generatePrintableReport();
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+            
+            this.showToast('✅ Raport pregătit pentru print!');
+        }, 1500);
+    }
+
+    generatePrintableReport() {
+        const stats = this.getTodayStatsReal();
+        const date = new Date().toLocaleDateString('ro-RO');
+        
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Raport Driver Support App - ${date}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .stats { margin: 20px 0; }
+                    .stat-row { display: flex; justify-content: space-between; margin: 10px 0; }
+                    @media print { body { margin: 0; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Driver Support App</h1>
+                    <h2>Raport Zilnic - ${date}</h2>
+                </div>
+                
+                <div class="stats">
+                    <h3>Activități</h3>
+                    <div class="stat-row">
+                        <span>Program început la:</span>
+                        <span>${this.programStartTime ? this.formatTime(this.programStartTime) : '-'}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Timp conducere:</span>
+                        <span>${this.formatDuration(stats.driving)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Timp pauze:</span>
+                        <span>${this.formatDuration(stats.break)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Timp lucru:</span>
+                        <span>${this.formatDuration(stats.work)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span><strong>Total:</strong></span>
+                        <span><strong>${this.formatDuration(stats.totalTime || stats.driving + stats.break + stats.work + stats.other)}</strong></span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px; font-size: 12px; text-align: center; color: #666;">
+                    Generat automatic de Driver Support App
+                </div>
+            </body>
+            </html>
+        `;
     }
 
     // Settings Management
@@ -1347,12 +1938,11 @@ document.addEventListener('visibilitychange', function() {
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📱 Driver Support App - JavaScript loaded');
-    
     try {
         initializeApp();
-        window.driverApp = new DriverApp();
-    } catch (error) {
-        console.error('Failed to initialize app:', error);
+    }
+    catch() {
+        
     }
 });
 
