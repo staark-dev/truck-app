@@ -29,41 +29,103 @@ class DriverApp {
         console.log('🚛 Driver Support App initializing...');
         
         try {
-            // Show loading screen
+            // Show loading screen briefly
             this.showLoadingScreen();
             
-            // Initialize components in correct order
-            await this.initializeComponents();
+            // Fast initialization - parallel operations
+            await this.fastInitialize();
             
-            // Request permissions
-            await this.requestPermissions();
-            
-            // Load saved data
-            this.loadSavedData();
-            
-            // Initialize services
-            await this.initializeServices();
-            
-            // Setup event listeners
-            this.setupEventListeners();
-            
-            // Update UI
-            this.updateNetworkStatus();
-            this.loadWeatherData();
-            
-            // Start periodic updates
-            this.startPeriodicUpdates();
-            
-            // Hide loading screen
+            // Hide loading screen quickly (max 2 seconds)
             this.hideLoadingScreen();
             
             this.isInitialized = true;
             console.log('✅ App initialized successfully');
             
+            // Continue with background initialization (non-blocking)
+            this.backgroundInitialize();
+            console.log("🚛 ** Continue with background initialization (non-blocking)");
         } catch (error) {
             console.error('❌ App initialization failed:', error);
             this.handleInitializationError(error);
         }
+    }
+
+    async fastInitialize() {
+        // Essential initialization only (fast path)
+        this.updateLoadingProgress(20, 'Inițializez componentele...');
+        
+        // Initialize core components quickly
+        await this.initializeComponents();
+        
+        this.updateLoadingProgress(50, 'Încarc datele salvate...');
+        
+        // Load saved data (fast, local storage)
+        this.loadSavedData();
+        
+        this.updateLoadingProgress(80, 'Finalizez...');
+        
+        // Basic setup
+        this.setupEventListeners();
+        this.updateNetworkStatus();
+        
+        this.updateLoadingProgress(100, 'Gata!');
+        
+        // Small delay for smooth UX
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    async backgroundInitialize() {
+        // Background initialization (non-blocking, after app is shown)
+        console.log('🔄 Starting background initialization...');
+        
+        try {
+            // Request permissions in background (non-blocking)
+            this.requestPermissionsInBackground();
+            
+            // Initialize location services
+            this.initializeLocationServices();
+            
+            // Load weather data
+            this.loadWeatherData();
+            
+            // Start periodic updates
+            this.startPeriodicUpdates();
+            
+            console.log('✅ Background initialization complete');
+        } catch (error) {
+            console.warn('⚠️ Background initialization issues:', error);
+        }
+    }
+
+    async requestPermissionsInBackground() {
+        // Request permissions without blocking the UI
+        const permissionsState = this.getPermissionsState();
+        
+        // Only request if not already handled and user interacted
+        setTimeout(() => {
+            if (!permissionsState.location.asked) {
+                this.requestLocationPermission();
+            }
+        }, 1000);
+        
+        setTimeout(() => {
+            if (!permissionsState.notifications.asked) {
+                this.requestNotificationPermission();
+            }
+        }, 2000);
+        
+        setTimeout(() => {
+            if (!permissionsState.microphone.asked) {
+                this.requestMicrophonePermission();
+            }
+        }, 3000);
+    }
+
+    initializeLocationServices() {
+        // Initialize location in background
+        setTimeout(() => {
+            this.initializeHomePageLocation();
+        }, 500);
     }
 
     showLoadingScreen() {
