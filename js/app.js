@@ -1116,6 +1116,81 @@ class DriverApp {
     switchTab(element, tabName) {
         console.log(`📱 Switching to tab: ${tabName}`);
         
+        try {
+            // Stop location updates if leaving GPS tab
+            if (window.app?.currentTab === 'gps' && tabName !== 'gps' && window.app?.locationUpdateInterval) {
+                clearInterval(window.app.locationUpdateInterval);
+                window.app.locationUpdateInterval = null;
+            }
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to clicked item
+            if (element) {
+                element.classList.add('active');
+            }
+            
+            // FORCE HIDE ALL PAGES (including pageProgram)
+            const allPages = document.querySelectorAll('.page');
+            allPages.forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';           // Force hide
+                page.style.visibility = 'hidden';      // Double safety
+                page.style.opacity = '0';              // Triple safety
+            });
+            
+            console.log(`🔍 Hidden ${allPages.length} pages`);
+            
+            // Show selected page
+            const pageMap = {
+                'program': 'pageProgram',
+                'gps': 'pageGPS',
+                'fuel': 'pageFuel',
+                'reports': 'pageReports',
+                'settings': 'pageSettings'
+            };
+            
+            const targetPageId = pageMap[tabName];
+            const targetPage = document.getElementById(targetPageId);
+            
+            if (targetPage) {
+                // FORCE SHOW target page
+                targetPage.classList.add('active');
+                targetPage.style.display = 'block';        // Force show
+                targetPage.style.visibility = 'visible';   // Double safety
+                targetPage.style.opacity = '1';            // Triple safety
+                
+                console.log(`✅ Showed page: ${targetPageId}`);
+                
+                // Update current tab in app
+                if (window.app) {
+                    window.app.currentTab = tabName;
+                }
+                
+                // Load page content if needed
+                if (window.app && typeof window.app.loadPageContent === 'function') {
+                    window.app.loadPageContent(tabName);
+                }
+                
+                // Show toast
+                if (window.app && typeof window.app.showToast === 'function') {
+                    window.app.showToast(`${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+                }
+            } else {
+                console.error(`❌ Page not found: ${targetPageId}`);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in switchTab:', error);
+        }
+    }
+
+    /*switchTab(element, tabName) {
+        console.log(`📱 Switching to tab: ${tabName}`);
+        
         // Stop location updates if leaving GPS tab
         if (this.currentTab === 'gps' && tabName !== 'gps' && this.locationUpdateInterval) {
             clearInterval(this.locationUpdateInterval);
@@ -1156,7 +1231,7 @@ class DriverApp {
         }
         
         this.showToast(`${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
-    }
+    }*/
 
     loadPageContent(tabName) {
         // Lazy load page content for better performance
@@ -1486,7 +1561,7 @@ class DriverApp {
         // Always reload reports page content to get fresh data
         let reportsPage = document.getElementById('pageReports');
         if (reportsPage) {
-            reportsPage.remove();
+            return; //reportsPage.remove();
         }
         
         const newPage = document.createElement('div');

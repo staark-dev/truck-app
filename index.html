@@ -45,137 +45,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <style>
-        /* CSS de bază pentru funcționare */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            overflow-x: hidden;
-        }
-        
-        .app-container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-            position: relative;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .nav-container {
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            z-index: 100;
-        }
-        
-        .nav {
-            display: flex;
-            justify-content: space-around;
-        }
-        
-        .nav-item {
-            flex: 1;
-            padding: 12px 8px;
-            text-align: center;
-            background: #ecf0f1;
-            color: #2c3e50;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 11px;
-            border: none;
-        }
-        
-        .nav-item.active {
-            background: #3498db;
-            color: white;
-        }
-        
-        .nav-item:hover {
-            background: #bdc3c7;
-        }
-        
-        .nav-item.active:hover {
-            background: #2980b9;
-        }
-        
-        .content {
-            padding-bottom: 80px;
-        }
-        
-        .page {
-            display: none;
-            padding: 20px;
-            min-height: calc(100vh - 160px);
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .control-btn {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #3498db;
-            background: #3498db;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s ease;
-        }
-        
-        .control-btn:hover {
-            background: #2980b9;
-            border-color: #2980b9;
-        }
-        
-        .control-btn.active {
-            background: #27ae60;
-            border-color: #27ae60;
-        }
-        
-        .location-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .weather-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #e0e0e0;
-        }
-        
         input, select, textarea {
             width: 100%;
             padding: 12px;
@@ -389,7 +258,7 @@
                 
                 <!-- Card-ul meteo poate rămâne la fel, acum va fi actualizat automat cu locația reală -->
                 <div class="weather-card" style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: none; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-size: 24px; font-weight: bold; color: #2c3e50;" id="weatherTemp">--°C</div>
                             <div style="font-size: 14px; color: #7f8c8d;" id="weatherDesc">Se încarcă...</div>
@@ -398,7 +267,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- GPS Page -->
             <div class="page" id="pageGPS">
                 <h2 style="color: #2c3e50; margin-bottom: 20px;">🗺️ GPS & Navigație</h2>
