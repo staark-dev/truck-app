@@ -43,7 +43,7 @@ class DriverApp {
             
             // Continue with background initialization (non-blocking)
             this.backgroundInitialize();
-            console.log("🚛 ** Continue with background initialization (non-blocking)");
+            
         } catch (error) {
             console.error('❌ App initialization failed:', error);
             this.handleInitializationError(error);
@@ -144,33 +144,99 @@ class DriverApp {
                 z-index: 9999;
                 color: white;
                 font-family: Arial, sans-serif;
+                opacity: 1;
+                transition: opacity 0.5s ease;
             ">
                 <div style="text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🚛</div>
-                    <h2 style="margin-bottom: 10px;">Driver Support App</h2>
-                    <div id="loadingStatus" style="margin-bottom: 30px; opacity: 0.8;">Se inițializează...</div>
+                    <div style="font-size: 48px; margin-bottom: 20px; animation: bounce 1s ease-in-out infinite alternate;">🚛</div>
+                    <h2 style="margin-bottom: 10px; animation: fadeIn 0.8s ease-in;">Driver Support App</h2>
+                    <div id="loadingStatus" style="margin-bottom: 30px; opacity: 0.8; min-height: 20px;">Se inițializează...</div>
                     <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden;">
-                        <div id="loadingProgress" style="width: 0%; height: 100%; background: white; border-radius: 2px; transition: width 0.3s;"></div>
+                        <div id="loadingProgress" style="width: 0%; height: 100%; background: white; border-radius: 2px; transition: width 0.3s ease;"></div>
                     </div>
+                    <div style="margin-top: 15px; font-size: 12px; opacity: 0.6;">Aplicația se încarcă rapid...</div>
                 </div>
             </div>
+            
+            <style>
+                @keyframes bounce {
+                    from { transform: translateY(0px); }
+                    to { transform: translateY(-10px); }
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                
+                @keyframes loadingPulse {
+                    0%, 100% { opacity: 0.6; }
+                    50% { opacity: 1; }
+                }
+                
+                #loadingStatus {
+                    animation: loadingPulse 2s ease-in-out infinite;
+                }
+            </style>
         `;
         document.body.insertAdjacentHTML('beforeend', loadingHTML);
+        
+        // Auto-hide after maximum 3 seconds (safety net)
+        this.loadingTimeout = setTimeout(() => {
+            console.warn('⚠️ Loading took too long, force hiding...');
+            this.hideLoadingScreen();
+        }, 3000);
     }
 
     updateLoadingProgress(percent, status) {
         const progressBar = document.getElementById('loadingProgress');
         const statusText = document.getElementById('loadingStatus');
-        if (progressBar) progressBar.style.width = percent + '%';
-        if (statusText) statusText.textContent = status;
+        
+        if (progressBar) {
+            progressBar.style.width = percent + '%';
+        }
+        
+        if (statusText) {
+            statusText.textContent = status;
+        }
+        
+        // Auto-advance progress for smooth UX
+        if (percent >= 100) {
+            setTimeout(() => {
+                this.hideLoadingScreen();
+            }, 300);
+        }
     }
 
     hideLoadingScreen() {
         const loadingScreen = document.getElementById('loadingScreen');
+        
         if (loadingScreen) {
+            // Clear timeout
+            if (this.loadingTimeout) {
+                clearTimeout(this.loadingTimeout);
+                this.loadingTimeout = null;
+            }
+            
+            // Smooth fade out
             loadingScreen.style.opacity = '0';
-            loadingScreen.style.transition = 'opacity 0.5s';
-            setTimeout(() => loadingScreen.remove(), 500);
+            loadingScreen.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                if (loadingScreen.parentNode) {
+                    loadingScreen.remove();
+                }
+            }, 500);
+            
+            // Show app content
+            const appContent = document.querySelector('.app-container, .content, main, body > *:not(#loadingScreen)');
+            if (appContent) {
+                appContent.style.opacity = '0';
+                appContent.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    appContent.style.opacity = '1';
+                }, 100);
+            }
         }
     }
 
