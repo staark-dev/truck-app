@@ -99,7 +99,7 @@
     <div class="app-container">
         <!-- Header -->
         <div class="header">
-            <button class="voice-control" onclick="toggleVoiceControl()" id="voiceBtn" title="Control vocal">
+            <button class="voice-control" onclick="app.toggleVoiceControl()" id="voiceBtn" title="Control vocal">
                 🎤
             </button>
             <div class="driver-info">
@@ -128,7 +128,7 @@
         </div>
 
         <!-- Alert Panel -->
-        <div class="alert-panel" id="alertPanel" onclick="hideAlert()">
+        <div class="alert-panel" id="alertPanel" onclick="app.hideAlert()">
             <div class="alert-title">⚠️ Alertă Siguranță</div>
             <div class="alert-message" id="alertMessage">Pauza obligatorie în 15 minute!</div>
         </div>
@@ -159,17 +159,17 @@
 
                 <!-- Start Program Button -->
                 <div class="control-grid" id="startButton">
-                <button class="control-btn btn-start" onclick="startProgram()">Start Program</button>
+                <button class="control-btn btn-start" onclick="app.startProgram()">Start Program</button>
                 </div>
 
                 <!-- Control Buttons -->
                 <div class="control-buttons" id="controlButtons">
                 <div class="control-grid">
-                    <button class="control-btn" id="btnDriving" onclick="setActivity('driving', 'Condus', this)">🚗 Condus</button>
-                    <button class="control-btn" id="btnBreak" onclick="setActivity('break', 'Pauză', this)">☕ Pauză</button>
-                    <button class="control-btn" id="btnWork" onclick="setActivity('work', 'Lucru', this)">🔧 Lucru</button>
-                    <button class="control-btn" id="btnOther" onclick="setActivity('other', 'Altele', this)">📋 Altele</button>
-                    <button class="control-btn" onclick="endProgram()" style="background: #e74c3c; border-color: #e74c3c; color:white;">⏹️ Termină Program</button>
+                    <button class="control-btn" id="btnDriving" onclick="app.setActivity('driving', 'Condus', this)">🚗 Condus</button>
+                    <button class="control-btn" id="btnBreak" onclick="app.setActivity('break', 'Pauză', this)">☕ Pauză</button>
+                    <button class="control-btn" id="btnWork" onclick="app.setActivity('work', 'Lucru', this)">🔧 Lucru</button>
+                    <button class="control-btn" id="btnOther" onclick="app.setActivity('other', 'Altele', this)">📋 Altele</button>
+                    <button class="control-btn" onclick="app.endProgram()" style="background: #e74c3c; border-color: #e74c3c; color:white;">⏹️ Termină Program</button>
                 </div>
                 </div>
             </div> <!-- ✅ închidere corectă .controls -->
@@ -212,7 +212,7 @@
             <div class="location-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="margin: 0; font-size: 18px;">📍 Locația Curentă</h3>
-                <button onclick="refreshLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;">🔄</button>
+                <button onclick="app.refreshLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;">🔄</button>
                 </div>
                 <div style="margin-bottom: 15px;">
                 <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" id="currentLocation">Se obține locația...</div>
@@ -224,13 +224,13 @@
                     <div style="font-size: 18px; font-weight: bold;" id="currentSpeed">0 km/h</div>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="shareCurrentLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">📤 Trimite</button>
-                    <button onclick="openLocationInMaps()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🗺️ Maps</button>
+                    <button onclick="app.shareCurrentLocation()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">📤 Trimite</button>
+                    <button onclick="app.openLocationInMaps()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🗺️ Maps</button>
                 </div>
                 </div>
             </div>
 
-            <div class="weather-card" style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+            <div class="weather-card" style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none;">
                 <div style="display: none; justify-content: space-between; align-items: center;">
                 <div>
                     <div style="font-size: 24px; font-weight: bold; color: #2c3e50;" id="weatherTemp">--°C</div>
@@ -284,7 +284,7 @@
                     <label>Stația (opțional):</label>
                     <input type="text" id="fuelStation" placeholder="Ex: Shell, OMV, Petrom">
                 </div>
-                <button onclick="saveFuelData()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500;">💾 Salvează Alimentare</button>
+                <button onclick="app.saveFuelData()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500;">💾 Salvează Alimentare</button>
                 </div>
             </div>
 
@@ -493,7 +493,7 @@
                 </div>
             </div>
             <div class="card">
-                <button onclick="saveSettings()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; width: 100%;">💾 Salvează setările</button>
+                <button onclick="app.saveSettings()" style="background: #27ae60; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; width: 100%;">💾 Salvează setările</button>
             </div>
             <div class="card">
                 <h3 style="color: #2c3e50; margin-bottom: 15px;">ℹ️ Despre aplicație</h3>
@@ -514,27 +514,27 @@
             <!-- Bottom Navigation -->
             <div class="bottom-nav">
                 <div class="nav-grid">
-                    <button class="nav-item active" onclick="switchTab(this, 'program')">
+                    <button class="nav-item active" onclick="app.switchTab(this, 'program')">
                         <div class="nav-icon">🚛</div>
                         <div class="nav-label">Program</div>
                     </button>
                     
-                    <button class="nav-item" onclick="switchTab(this, 'gps')">
+                    <button class="nav-item" onclick="app.switchTab(this, 'gps')">
                         <div class="nav-icon">📍</div>
                         <div class="nav-label">GPS</div>
                     </button>
                     
-                    <button class="nav-item" onclick="switchTab(this, 'fuel')">
+                    <button class="nav-item" onclick="app.switchTab(this, 'fuel')">
                         <div class="nav-icon">⛽</div>
                         <div class="nav-label">Fuel</div>
                     </button>
                     
-                    <button class="nav-item" onclick="switchTab(this, 'reports')">
+                    <button class="nav-item" onclick="app.switchTab(this, 'reports')">
                         <div class="nav-icon">📊</div>
                         <div class="nav-label">Rapoarte</div>
                     </button>
                     
-                    <button class="nav-item" onclick="switchTab(this, 'settings')">
+                    <button class="nav-item" onclick="app.switchTab(this, 'settings')">
                         <div class="nav-icon">⚙️</div>
                         <div class="nav-label">Setări</div>
                     </button>
