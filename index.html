@@ -8,8 +8,8 @@
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#3498db">
     <meta name="description" content="Aplicație pentru managementul timpilor de lucru conform reglementărilor din Suedia">
-    <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/styles.css?v=1">
     <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
     <!-- Prevent zoom on input focus -->
@@ -363,7 +363,7 @@
             }
         }, 3000);
 
-        (function(){
+        /*(function(){
           const box = document.createElement('pre');
           box.id = 'debugOverlay';
           box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;margin:0;background:#111;color:#0f0;padding:8px;font:12px/1.4 monospace;z-index:99999;opacity:.95;display:none';
@@ -381,7 +381,7 @@
           window.addEventListener('touchstart', ()=> pressTimer = setTimeout(()=> box.style.display = (box.style.display==='none'?'block':'none'), 700));
           window.addEventListener('touchend', ()=> clearTimeout(pressTimer));
           console.log = ((orig)=>function(){ show('📝 ' + Array.from(arguments).map(a=> typeof a==='object'?JSON.stringify(a):String(a)).join(' ')); orig.apply(console, arguments); })(console.log);
-        })();
+        })();*/
     </script>
 </body>
 </html>
