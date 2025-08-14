@@ -8,7 +8,6 @@ this.activityStartTime = null;
 this.voiceListening = false;
 this.currentTab = ‘program’;
 
-```
     // Initialize components
     this.dataManager = new DataManager();
     this.timeTracker = new TimeTracker();
