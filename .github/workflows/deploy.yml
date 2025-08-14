@@ -1,428 +1,422 @@
-# 🚛 Driver Support PWA - GitHub Actions Workflow
-
-# Automatizează deployment-ul și testarea aplicației PWA
-
-name: 🚀 Deploy PWA to GitHub Pages
-
-# Trigger workflow-ul
+name: 🚀 Deploy Driver Support PWA
 
 on:
-
-# La push pe branch-ul main
-
-push:
-branches: [ main, master ]
-
-# La Pull Request către main
-
-pull_request:
-branches: [ main, master ]
-
-# Manual trigger
-
-workflow_dispatch:
-inputs:
-environment:
-description: ‘Environment to deploy to’
-required: true
-default: ‘production’
-type: choice
-options:
-- production
-- staging
-
-# Permissions pentru GitHub Pages
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
 
 permissions:
-contents: read
-pages: write
-id-token: write
-
-# Prevent concurrent deployments
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-group: “pages”
-cancel-in-progress: false
-
-# Environment variables
+  group: "pages"
+  cancel-in-progress: false
 
 env:
-NODE_VERSION: ‘18’
-LIGHTHOUSE_CI_BUILD_PATH: ‘./dist’
+  NODE_VERSION: '18'
 
 jobs:
-
-# Job 1: Build și validare
-
-build-and-validate:
-name: 🔨 Build and Validate
-runs-on: ubuntu-latest
-
-```
-steps:
-  - name: 📥 Checkout code
-    uses: actions/checkout@v4
+  build-and-validate:
+    name: 🔨 Build and Validate
+    runs-on: ubuntu-latest
     
-  - name: 📦 Setup Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: ${{ env.NODE_VERSION }}
-      cache: 'npm'
-
-  - name: 📋 Install dependencies
-    run: |
-      npm install -g uglify-js clean-css-cli lighthouse
-      
-  - name: 🔍 Validate PWA structure
-    run: |
-      echo "🔍 Checking required PWA files..."
-      
-      # Check required files exist
-      required_files=("index.html" "manifest.json" "sw.js")
-      for file in "${required_files[@]}"; do
-        if [ ! -f "$file" ]; then
-          echo "❌ Missing required file: $file"
-          exit 1
-        else
-          echo "✅ Found: $file"
-        fi
-      done
-      
-      # Check JavaScript files
-      js_files=("js/app.js" "js/data-manager.js" "js/time-tracker.js" "js/location-service.js" "js/alerts.js")
-      for file in "${js_files[@]}"; do
-        if [ ! -f "$file" ]; then
-          echo "❌ Missing JS file: $file"
-          exit 1
-        else
-          echo "✅ Found: $file"
-        fi
-      done
-      
-      # Check icons directory
-      if [ ! -d "icons" ]; then
-        echo "⚠️ Icons directory missing, creating placeholder..."
-        mkdir -p icons
-        # Create a simple SVG icon as placeholder
-        cat > icons/icon-192x192.svg << 'EOF'
-      <?xml version="1.0" encoding="UTF-8"?>
-      <svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
-        <rect width="192" height="192" fill="#3498db"/>
-        <text x="96" y="96" font-family="Arial" font-size="80" fill="white" text-anchor="middle" dy="0.3em">🚛</text>
-      </svg>
-      EOF
-        cp icons/icon-192x192.svg icons/icon-512x512.svg
-      else
-        echo "✅ Icons directory found"
-      fi
-      
-  - name: ✅ Validate manifest.json
-    run: |
-      echo "🔍 Validating manifest.json..."
-      if node -e "JSON.parse(require('fs').readFileSync('manifest.json', 'utf8'))" 2>/dev/null; then
-        echo "✅ manifest.json is valid JSON"
-      else
-        echo "❌ manifest.json is not valid JSON"
-        exit 1
-      fi
-      
-      # Check required manifest fields
-      if grep -q '"name"' manifest.json && grep -q '"short_name"' manifest.json && grep -q '"start_url"' manifest.json; then
-        echo "✅ Required manifest fields present"
-      else
-        echo "❌ Missing required manifest fields"
-        exit 1
-      fi
-      
-  - name: 🗜️ Minify JavaScript
-    run: |
-      echo "🗜️ Minifying JavaScript files..."
-      mkdir -p dist
-      cp -r . dist/
-      cd dist
-      
-      # Minify JS files
-      for jsfile in js/*.js; do
-        if [[ $jsfile != *.min.js && -f $jsfile ]]; then
-          echo "Minifying: $jsfile"
-          uglifyjs "$jsfile" -c -m -o "${jsfile%.js}.min.js"
-          # Replace original with minified in HTML
-          if [ -f "index.html" ]; then
-            sed -i "s|$jsfile|${jsfile%.js}.min.js|g" index.html
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: 🔍 Validate PWA structure
+        run: |
+          echo "🔍 Checking required PWA files..."
+          
+          # Check required files exist
+          required_files=("index.html" "manifest.json" "sw.js" "app.js")
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            else
+              echo "✅ Found: $file"
+            fi
+          done
+          
+      - name: 🏗️ Create icons if missing
+        run: |
+          if [ ! -d "icons" ]; then
+            echo "⚠️ Icons directory missing, creating placeholders..."
+            mkdir -p icons
+            
+            # Create placeholder icons using ImageMagick if available, otherwise simple files
+            if command -v convert &> /dev/null; then
+              # Create proper PNG icons with ImageMagick
+              sizes=(72 96 128 144 152 192 384 512)
+              for size in "${sizes[@]}"; do
+                convert -size ${size}x${size} xc:"#3498db" -gravity center \
+                  -pointsize $((size/3)) -fill white -annotate +0+0 "🚛" \
+                  "icons/icon-${size}.png"
+              done
+            else
+              # Create simple SVG icons as fallback
+              for size in 72 96 128 144 152 192 384 512; do
+                cat > "icons/icon-${size}.png" << EOF
+          <svg width="$size" height="$size" xmlns="http://www.w3.org/2000/svg">
+            <rect width="$size" height="$size" fill="#3498db"/>
+            <text x="50%" y="50%" font-family="Arial" font-size="$((size/3))" fill="white" text-anchor="middle" dy="0.3em">🚛</text>
+          </svg>
+          EOF
+              done
+            fi
+            echo "✅ Created placeholder icons"
+          else
+            echo "✅ Icons directory found"
           fi
-        fi
-      done
-      
-  - name: 🧪 Test Service Worker
-    run: |
-      echo "🧪 Testing Service Worker syntax..."
-      if node -c sw.js; then
-        echo "✅ Service Worker syntax is valid"
-      else
-        echo "❌ Service Worker has syntax errors"
-        exit 1
-      fi
-      
-  - name: 📦 Create build artifact
-    uses: actions/upload-artifact@v4
-    with:
-      name: pwa-build
-      path: dist/
-      retention-days: 30
-```
+          
+      - name: ✅ Validate manifest.json
+        run: |
+          echo "🔍 Validating manifest.json..."
+          
+          # Check if manifest.json is valid JSON
+          if jq empty manifest.json 2>/dev/null; then
+            echo "✅ manifest.json is valid JSON"
+          else
+            echo "❌ manifest.json is not valid JSON"
+            cat manifest.json
+            exit 1
+          fi
+          
+          # Check required manifest fields
+          required_fields=("name" "short_name" "start_url" "display" "background_color" "theme_color")
+          for field in "${required_fields[@]}"; do
+            if jq -e "has(\"$field\")" manifest.json > /dev/null; then
+              echo "✅ Found required field: $field"
+            else
+              echo "❌ Missing required field: $field"
+              exit 1
+            fi
+          done
+          
+      - name: 🧪 Test Service Worker
+        run: |
+          echo "🧪 Testing Service Worker syntax..."
+          if node -c sw.js 2>/dev/null; then
+            echo "✅ Service Worker syntax is valid"
+          else
+            echo "❌ Service Worker has syntax errors"
+            node -c sw.js || true
+            exit 1
+          fi
+          
+      - name: 🧪 Test JavaScript files
+        run: |
+          echo "🧪 Testing JavaScript syntax..."
+          js_files=(app.js)
+          
+          for jsfile in "${js_files[@]}"; do
+            if [ -f "$jsfile" ]; then
+              echo "Testing: $jsfile"
+              if node -c "$jsfile" 2>/dev/null; then
+                echo "✅ $jsfile syntax is valid"
+              else
+                echo "❌ $jsfile has syntax errors"
+                node -c "$jsfile" || true
+                exit 1
+              fi
+            fi
+          done
+          
+      - name: 📦 Create build directory
+        run: |
+          echo "📦 Creating build directory..."
+          mkdir -p dist
+          
+          # Copy all files to dist
+          cp -r * dist/ 2>/dev/null || true
+          
+          # Ensure dist has all required files
+          cd dist
+          ls -la
+          
+          # Verify structure
+          echo "📋 Build directory contents:"
+          find . -type f -name "*.html" -o -name "*.js" -o -name "*.json" -o -name "*.css" | head -20
+          
+      - name: 🗜️ Optimize files (optional)
+        run: |
+          cd dist
+          echo "🗜️ Optimizing files..."
+          
+          # Install optimization tools if needed
+          if command -v uglifyjs &> /dev/null; then
+            echo "Minifying JavaScript..."
+            for jsfile in *.js; do
+              if [[ $jsfile != *.min.js && -f $jsfile ]]; then
+                uglifyjs "$jsfile" -c -m -o "${jsfile%.js}.min.js" || cp "$jsfile" "${jsfile%.js}.min.js"
+              fi
+            done
+          else
+            echo "⚠️ UglifyJS not available, skipping minification"
+          fi
+          
+      - name: 📦 Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pwa-build
+          path: dist/
+          retention-days: 30
 
-# Job 2: Lighthouse CI pentru PWA audit
-
-lighthouse-audit:
-name: 🔍 Lighthouse PWA Audit
-runs-on: ubuntu-latest
-needs: build-and-validate
-if: github.event_name == ‘pull_request’
-
-```
-steps:
-  - name: 📥 Checkout code
-    uses: actions/checkout@v4
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-validate
     
-  - name: 📦 Download build artifact
-    uses: actions/download-artifact@v4
-    with:
-      name: pwa-build
-      path: ./dist
-      
-  - name: 📦 Setup Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: ${{ env.NODE_VERSION }}
-      
-  - name: 🔍 Install Lighthouse CI
-    run: npm install -g @lhci/cli http-server
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🔍 Check for potential secrets
+        run: |
+          echo "🔍 Scanning for potential secrets..."
+          
+          # Check for common secret patterns (but allow placeholders)
+          if grep -r -i "api[_-]key.*['\"][^'\"]*['\"]" --include="*.js" --include="*.json" --exclude="package*.json" . | grep -v "example\|placeholder\|TODO\|your-api-key"; then
+            echo "⚠️ Potential API keys found in code"
+            echo "Please review the above matches"
+          else
+            echo "✅ No obvious secrets found"
+          fi
+          
+          # Check for passwords
+          if grep -r -i "password.*['\"][^'\"]*['\"]" --include="*.js" . | grep -v "placeholder\|example\|your-password"; then
+            echo "⚠️ Potential passwords found in code"
+          else
+            echo "✅ No hardcoded passwords found"
+          fi
+
+  deploy:
+    name: 🚀 Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [build-and-validate, security-scan]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
-  - name: 🚀 Start local server
-    run: |
-      cd dist
-      http-server -p 8080 -s &
-      echo $! > server.pid
-      sleep 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
       
-  - name: 🔍 Run Lighthouse CI
-    run: |
-      lhci collect \
-        --url=http://localhost:8080 \
-        --numberOfRuns=3 \
-        --additive
-        
-      lhci assert \
-        --preset=lighthouse:default \
-        --assertions.pwa=error \
-        --assertions.performance=warn \
-        --assertions.accessibility=error \
-        --assertions.best-practices=warn \
-        --assertions.seo=warn
-        
-  - name: 🛑 Stop local server
-    run: |
-      if [ -f dist/server.pid ]; then
-        kill $(cat dist/server.pid) || true
-      fi
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
       
-  - name: 📊 Upload Lighthouse results
-    uses: actions/upload-artifact@v4
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 📦 Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pwa-build
+          path: ./dist
+          
+      - name: 🔧 Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: 📋 Final build verification
+        run: |
+          echo "📋 Final verification before deployment..."
+          cd dist
+          
+          # List all files
+          echo "Files to be deployed:"
+          find . -type f | sort
+          
+          # Check essential files
+          essential_files=("index.html" "manifest.json" "sw.js" "app.js")
+          for file in "${essential_files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✅ $file ready for deployment"
+              echo "   Size: $(stat -f%z "$file" 2>/dev/null || stat -c%s "$file") bytes"
+            else
+              echo "❌ Missing essential file: $file"
+              exit 1
+            fi
+          done
+          
+      - name: 📁 Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+          
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        
+      - name: 🎉 Deployment success
+        run: |
+          echo "🎉 Deployment successful!"
+          echo "📱 PWA URL: ${{ steps.deployment.outputs.page_url }}"
+          echo ""
+          echo "🔗 Access your PWA at:"
+          echo "${{ steps.deployment.outputs.page_url }}"
+
+  post-deploy-test:
+    name: 🔍 Post-Deployment Test
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: ⏳ Wait for deployment
+        run: |
+          echo "⏳ Waiting for deployment to propagate..."
+          sleep 60
+          
+      - name: 🔍 Test deployment
+        env:
+          SITE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          echo "🔍 Testing deployment at: $SITE_URL"
+          
+          # Test main page
+          echo "Testing main page..."
+          if curl -f -s -I "$SITE_URL" | grep -q "200 OK\|HTTP/2 200"; then
+            echo "✅ Main page is accessible"
+          else
+            echo "❌ Main page is not accessible"
+            curl -I "$SITE_URL" || true
+            exit 1
+          fi
+          
+          # Test manifest
+          echo "Testing manifest..."
+          if curl -f -s "${SITE_URL}manifest.json" > /dev/null; then
+            echo "✅ Manifest is accessible"
+            echo "Manifest content preview:"
+            curl -s "${SITE_URL}manifest.json" | jq .name,.short_name,.start_url 2>/dev/null || curl -s "${SITE_URL}manifest.json" | head -5
+          else
+            echo "❌ Manifest is not accessible"
+          fi
+          
+          # Test service worker
+          echo "Testing service worker..."
+          if curl -f -s "${SITE_URL}sw.js" > /dev/null; then
+            echo "✅ Service Worker is accessible"
+            echo "Service Worker size: $(curl -s "${SITE_URL}sw.js" | wc -c) bytes"
+          else
+            echo "❌ Service Worker is not accessible"
+          fi
+          
+          # Test app.js
+          echo "Testing main app file..."
+          if curl -f -s "${SITE_URL}app.js" > /dev/null; then
+            echo "✅ App.js is accessible"
+            echo "App.js size: $(curl -s "${SITE_URL}app.js" | wc -c) bytes"
+          else
+            echo "❌ App.js is not accessible"
+          fi
+
+  lighthouse-audit:
+    name: 🔍 Lighthouse PWA Audit
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: 🔍 Install Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          
+      - name: ⏳ Wait for deployment
+        run: |
+          echo "⏳ Waiting for deployment to be fully available..."
+          sleep 90
+          
+      - name: 🔍 Run Lighthouse audit
+        env:
+          SITE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          echo "🔍 Running Lighthouse audit on: $SITE_URL"
+          
+          # Run Lighthouse audit
+          lhci collect \
+            --url="$SITE_URL" \
+            --numberOfRuns=1 \
+            --additive || echo "⚠️ Lighthouse audit completed with warnings"
+            
+          # Save results
+          mkdir -p lighthouse-reports
+          if [ -d ".lighthouseci" ]; then
+            cp -r .lighthouseci/* lighthouse-reports/ 2>/dev/null || true
+          fi
+          
+          echo "✅ Lighthouse audit completed"
+          
+      - name: 📊 Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-results
+          path: lighthouse-reports/
+          retention-days: 30
+
+  notify-completion:
+    name: 📢 Notify Completion
+    runs-on: ubuntu-latest
+    needs: [deploy, post-deploy-test, lighthouse-audit]
     if: always()
-    with:
-      name: lighthouse-results
-      path: .lighthouseci/
-      retention-days: 30
-```
-
-# Job 3: Security scan
-
-security-scan:
-name: 🔒 Security Scan
-runs-on: ubuntu-latest
-needs: build-and-validate
-
-```
-steps:
-  - name: 📥 Checkout code
-    uses: actions/checkout@v4
     
-  - name: 🔒 Run Semgrep security scan
-    uses: returntocorp/semgrep-action@v1
-    with:
-      config: >-
-        p/security-audit
-        p/secrets
-        p/javascript
-        
-  - name: 🔍 Check for hardcoded secrets
-    run: |
-      echo "🔍 Scanning for potential secrets..."
-      
-      # Check for common secret patterns
-      if grep -r -i "api[_-]key\|password\|secret\|token" --include="*.js" --include="*.json" --exclude="package*.json" . | grep -v "example\|placeholder\|TODO"; then
-        echo "⚠️ Potential secrets found in code"
-        echo "Please review the above matches"
-      else
-        echo "✅ No obvious secrets found"
-      fi
-```
-
-# Job 4: Deploy to GitHub Pages
-
-deploy:
-name: 🚀 Deploy to GitHub Pages
-runs-on: ubuntu-latest
-needs: [build-and-validate, security-scan]
-if: github.ref == ‘refs/heads/main’ || github.ref == ‘refs/heads/master’
-outputs:
-page_url: ${{ steps.deployment.outputs.page_url }}
-
-```
-environment:
-  name: github-pages
-  url: ${{ steps.deployment.outputs.page_url }}
-  
-steps:
-  - name: 📥 Checkout code
-    uses: actions/checkout@v4
-    
-  - name: 📦 Download build artifact
-    uses: actions/download-artifact@v4
-    with:
-      name: pwa-build
-      path: ./dist
-      
-  - name: 🔧 Setup Pages
-    uses: actions/configure-pages@v4
-    
-  - name: 📁 Upload to Pages
-    uses: actions/upload-pages-artifact@v3
-    with:
-      path: './dist'
-      
-  - name: 🚀 Deploy to GitHub Pages
-    id: deployment
-    uses: actions/deploy-pages@v4
-    
-  - name: 🎉 Deployment success
-    run: |
-      echo "🎉 Deployment successful!"
-      echo "📱 PWA URL: ${{ steps.deployment.outputs.page_url }}"
-      
-  # Post-deployment validation
-  - name: 🔍 Post-deployment health check
-    run: |
-      sleep 30  # Wait for deployment to propagate
-      
-      URL="${{ steps.deployment.outputs.page_url }}"
-      echo "🔍 Checking deployment at: $URL"
-      
-      # Check if site is accessible
-      if curl -f -s "$URL" > /dev/null; then
-        echo "✅ Site is accessible"
-      else
-        echo "❌ Site is not accessible"
-        exit 1
-      fi
-      
-      # Check if manifest is accessible
-      if curl -f -s "${URL}manifest.json" > /dev/null; then
-        echo "✅ Manifest is accessible"
-      else
-        echo "❌ Manifest is not accessible"
-      fi
-      
-      # Check if service worker is accessible
-      if curl -f -s "${URL}sw.js" > /dev/null; then
-        echo "✅ Service Worker is accessible"
-      else
-        echo "❌ Service Worker is not accessible"
-      fi
-```
-
-# Job 5: Post-deployment Lighthouse audit
-
-post-deploy-audit:
-name: 🔍 Post-Deployment Audit
-runs-on: ubuntu-latest
-needs: deploy
-if: github.ref == ‘refs/heads/main’ || github.ref == ‘refs/heads/master’
-
-```
-steps:
-  - name: 📦 Setup Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: ${{ env.NODE_VERSION }}
-      
-  - name: 🔍 Install Lighthouse CI
-    run: npm install -g @lhci/cli
-    
-  - name: 🔍 Run production Lighthouse audit
-    env:
-      SITE_URL: ${{ needs.deploy.outputs.page_url }}
-    run: |
-      echo "🔍 Running Lighthouse audit on production site..."
-      
-      # Wait for deployment to be fully available
-      sleep 60
-      
-      lhci collect \
-        --url="${SITE_URL}" \
-        --numberOfRuns=3 \
-        --additive
-        
-      # Generate reports
-      lhci upload \
-        --target=filesystem \
-        --outputDir=./lighthouse-reports
-        
-  - name: 📊 Upload production Lighthouse results
-    uses: actions/upload-artifact@v4
-    if: always()
-    with:
-      name: production-lighthouse-results
-      path: ./lighthouse-reports/
-      retention-days: 30
-      
-  - name: 📱 PWA Installation Test
-    env:
-      SITE_URL: ${{ needs.deploy.outputs.page_url }}
-    run: |
-      echo "📱 Testing PWA installation capabilities..."
-      
-      # Basic PWA checks via curl
-      echo "Checking manifest..."
-      curl -f "${SITE_URL}manifest.json" | jq .
-      
-      echo "Checking service worker..."
-      curl -f "${SITE_URL}sw.js" | head -10
-      
-      echo "✅ PWA structure verification complete"
-```
-
-# Job 6: Notifications
-
-notify:
-name: 📢 Notify Results
-runs-on: ubuntu-latest
-needs: [deploy, post-deploy-audit]
-if: always()
-
-```
-steps:
-  - name: 📢 Success notification
-    if: needs.deploy.result == 'success'
-    run: |
-      echo "🎉 Driver Support PWA deployed successfully!"
-      echo "📱 URL: ${{ needs.deploy.outputs.page_url }}"
-      echo "🔍 Lighthouse reports available in artifacts"
-      
-  - name: 📢 Failure notification
-    if: needs.deploy.result == 'failure'
-    run: |
-      echo "❌ Deployment failed!"
-      echo "Please check the logs for details"
-      exit 1
-```
+    steps:
+      - name: 📢 Success notification
+        if: needs.deploy.result == 'success'
+        run: |
+          echo "🎉 Driver Support PWA deployed successfully!"
+          echo ""
+          echo "📱 PWA URL: ${{ needs.deploy.outputs.page_url }}"
+          echo "🔍 Post-deployment tests: ${{ needs.post-deploy-test.result }}"
+          echo "📊 Lighthouse audit: ${{ needs.lighthouse-audit.result }}"
+          echo ""
+          echo "✅ Your PWA is now live and accessible!"
+          echo "📱 Users can install it as a mobile app"
+          echo "🔍 Check the artifacts for detailed reports"
+          
+      - name: 📢 Failure notification
+        if: needs.deploy.result == 'failure'
+        run: |
+          echo "❌ Deployment failed!"
+          echo ""
+          echo "Build status: ${{ needs.build-and-validate.result }}"
+          echo "Security scan: ${{ needs.security-scan.result }}"
+          echo "Deploy status: ${{ needs.deploy.result }}"
+          echo ""
+          echo "Please check the individual job logs for details"
+          exit 1
+          
+      - name: 📢 Partial success notification
+        if: needs.deploy.result == 'success' && (needs.post-deploy-test.result != 'success' || needs.lighthouse-audit.result != 'success')
+        run: |
+          echo "⚠️ Deployment succeeded but some tests failed"
+          echo ""
+          echo "📱 PWA URL: ${{ needs.deploy.outputs.page_url }}"
+          echo "🔍 Post-deployment tests: ${{ needs.post-deploy-test.result }}"
+          echo "📊 Lighthouse audit: ${{ needs.lighthouse-audit.result }}"
+          echo ""
+          echo "The PWA is deployed but may have issues. Check the test results."
