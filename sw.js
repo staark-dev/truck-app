@@ -1,5 +1,5 @@
 // Driver Support App - Service Worker
-const CACHE_NAME = 'driver-support-v1.028.06';
+const CACHE_NAME = 'driver-support-v1.2.234';
 const urlsToCache = [
   '/',
   '/index.html',
