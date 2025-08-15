@@ -465,3 +465,7 @@ class LocationService {
 }
 
 console.log('📍 LocationService (Optimized) loaded');
+// la finalul LocationService.js
+if (typeof window !== 'undefined') {
+  window.LocationService = LocationService;
+}
