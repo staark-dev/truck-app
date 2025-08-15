@@ -11,17 +11,17 @@ class DriverApp {
     this.locationUpdateInterval = null;
     this.currentLocation = null;
 
-  // --- Google Maps state ---
-  googleMapsPromise = null;
-  gmap = null;
-  gmarker = null;
-  gaccuracy = null;
-  gpolyline = null;
-  gtrackCoords = [];
-  gdirectionsService = null;
-  gdirectionsRenderer = null;
-  gtrafficLayer = null;
-  gplaces = null;
+    // --- Google Maps state ---
+    googleMapsPromise = null;
+    gmap = null;
+    gmarker = null;
+    gaccuracy = null;
+    gpolyline = null;
+    gtrackCoords = [];
+    gdirectionsService = null;
+    gdirectionsRenderer = null;
+    gtrafficLayer = null;
+    gplaces = null;
 
     // Initialize components with error handling
     try {
@@ -1659,14 +1659,6 @@ function resetPermissions() { if (app?.resetPermissions) app.resetPermissions();
 document.addEventListener('visibilitychange', function () { if (app) { if (document.hidden) console.log('📱 App backgrounded'); else console.log('📱 App foregrounded'); } });
 
 document.addEventListener('DOMContentLoaded', function () { console.log('📱 Driver Support App - JavaScript loaded'); initializeApp(); });
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => { console.log('✅ SW registered: ', registration); })
-      .catch((registrationError) => { console.log('❌ SW registration failed: ', registrationError); });
-  });
-}
 
 window.addEventListener('online', function () { console.log('🌐 App is online'); app?.updateNetworkStatus?.(); });
 window.addEventListener('offline', function () { console.log('📱 App is offline'); app?.updateNetworkStatus?.(); });
