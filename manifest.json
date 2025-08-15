@@ -3,7 +3,7 @@
   "short_name": "Driver Support Pro",
   "description": "Aplicație pentru managementul timpilor de lucru conform reglementărilor din Suedia",
   "version": "1.0.2",
-  "start_url": "./?pwa=1",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#3498db",
