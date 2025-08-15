@@ -11,6 +11,18 @@ class DriverApp {
     this.locationUpdateInterval = null;
     this.currentLocation = null;
 
+  // --- Google Maps state ---
+  googleMapsPromise = null;
+  gmap = null;
+  gmarker = null;
+  gaccuracy = null;
+  gpolyline = null;
+  gtrackCoords = [];
+  gdirectionsService = null;
+  gdirectionsRenderer = null;
+  gtrafficLayer = null;
+  gplaces = null;
+
     // Initialize components with error handling
     try {
       this.dataManager = new DataManager();
@@ -66,6 +78,22 @@ class DriverApp {
     }
   }
 
+  async loadGoogleMapsOnce() {
+    if (window.google && window.google.maps) return;
+    if (!this.googleMapsPromise) {
+      const key = 'AIzaSyCmGr0WUbpzHnlrJLdrvaMzuIL1ghPfC8k'; // <-- pune cheia ta aici
+      const url = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&v=weekly`;
+      this.googleMapsPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = url; s.async = true; s.defer = true;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('Google Maps failed to load'));
+        document.head.appendChild(s);
+      });
+    }
+    await this.googleMapsPromise;
+  }
+  
   // ================= App Initialization =================
   async initializeApp() {
     console.log('🚛 Driver Support App initializing...');
@@ -141,6 +169,73 @@ class DriverApp {
     setTimeout(() => { this.initializeHomePageLocation(); }, 500);
   }
 
+  async initGoogleMap(locationData) {
+    await this.loadGoogleMapsOnce();
+  
+    const start = {
+      lat: locationData.latitude ?? 45.9432,
+      lng: locationData.longitude ?? 24.9668
+    };
+  
+    // dacă există deja o hartă, doar o actualizăm
+    if (this.gmap) {
+      google.maps.event.trigger(this.gmap, 'resize');
+      this.updateGoogleMap(locationData);
+      return;
+    }
+  
+    this.gmap = new google.maps.Map(document.getElementById('gpsMap'), {
+      center: start,
+      zoom: 15,
+      disableDefaultUI: false,
+      mapTypeControl: false,
+      fullscreenControl: true
+    });
+  
+    // straturi utile
+    this.gtrafficLayer = new google.maps.TrafficLayer();
+    this.gtrafficLayer.setMap(this.gmap);
+  
+    this.gmarker = new google.maps.Marker({
+      position: start,
+      map: this.gmap,
+      title: 'Poziția mea',
+      zIndex: 2
+    });
+  
+    this.gaccuracy = new google.maps.Circle({
+      center: start,
+      radius: locationData.accuracy || 30,
+      map: this.gmap,
+      strokeOpacity: 0,
+      fillColor: '#4285F4',
+      fillOpacity: 0.15
+    });
+  
+    this.gtrackCoords = [start];
+    this.gpolyline = new google.maps.Polyline({
+      path: this.gtrackCoords,
+      map: this.gmap,
+      strokeOpacity: 0.9,
+      strokeWeight: 4
+    });
+  
+    this.gdirectionsService = new google.maps.DirectionsService();
+    this.gdirectionsRenderer = new google.maps.DirectionsRenderer({
+      map: this.gmap,
+      suppressMarkers: false,
+      preserveViewport: false
+    });
+  
+    this.gplaces = new google.maps.places.PlacesService(this.gmap);
+  
+    // primul update
+    this.updateGoogleMap(locationData);
+  
+    // fix când tab-ul a fost ascuns
+    setTimeout(() => google.maps.event.trigger(this.gmap, 'resize'), 300);
+  }
+  
   // ================= Loading Screen =================
   showLoadingScreen() {
     const loadingHTML = `
@@ -773,7 +868,8 @@ class DriverApp {
 
       <div style="height:200px;background:linear-gradient(135deg,#74b9ff,#0984e3);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:bold;margin-bottom:20px;position:relative;overflow:hidden;">
         <div style="background:rgba(255,255,255,.1);border-radius:50%;width:60px;height:60px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">🗺️</div>
-        <div>HARTĂ GPS</div>
+        <div id="gpsMap" style="height: 280px; border-radius: 12px; overflow: hidden; margin-bottom: 12px;"></div>
+        <small id="gpsMapSubtitle" style="display:block; text-align:center; opacity:.8;">Tracking activ: 0.00 km</small>
         <small id="gpsMapSubtitle" style="opacity:.8;">Tracking activ: ${distance.toFixed(2)} km</small>
         <div style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.2);padding:5px 10px;border-radius:15px;font-size:12px;">Live</div>
       </div>
@@ -788,8 +884,50 @@ class DriverApp {
 
     gpsContent.dataset.state = 'ready';
     this.startLocationUpdates();
+    this.initGoogleMap(locationData);
   }
 
+  updateGoogleMap(locationData) {
+    if (!this.gmap || !locationData) return;
+  
+    const lat = locationData.latitude;
+    const lng = locationData.longitude;
+    const pos = { lat, lng };
+  
+    // marker + cerc de acuratețe
+    this.gmarker && this.gmarker.setPosition(pos);
+    this.gaccuracy && (this.gaccuracy.setCenter(pos), this.gaccuracy.setRadius(locationData.accuracy || 30));
+  
+    // prelungim traseul dacă s-a mișcat > 5m
+    const last = this.gtrackCoords[this.gtrackCoords.length - 1];
+    const moved = this.locationService
+      ? this.locationService.calculateDistance(last.lat, last.lng, lat, lng)
+      : 999;
+  
+    if (!last || moved > 5) {
+      this.gtrackCoords.push(pos);
+      this.gpolyline && this.gpolyline.setPath(this.gtrackCoords);
+    }
+  
+    // recentrează ușor dacă utilizatorul nu a mișcat harta
+    if (!this._userPanned) this.gmap.setCenter(pos);
+  
+    // subtitle cu km parcurși
+    const sub = document.getElementById('gpsMapSubtitle');
+    if (sub && this.locationService) {
+      sub.textContent = `Tracking activ: ${this.locationService.getTotalDistance().toFixed(2)} km`;
+    }
+  }
+  
+  // opțional: nu mai recentra dacă user-ul a panat/zoomat
+  attachPanGuardForMap() {
+    if (!this.gmap) return;
+    this._userPanned = false;
+    this.gmap.addListener('dragstart', () => { this._userPanned = true; });
+    this.gmap.addListener('zoom_changed', () => { this._userPanned = true; });
+  }
+
+  
   displayGPSError() {
     const gpsContent = document.getElementById('gpsContent');
     if (!gpsContent) return;
@@ -843,7 +981,7 @@ class DriverApp {
     if (this.locationUpdateInterval) clearInterval(this.locationUpdateInterval);
     this.locationUpdateInterval = setInterval(() => {
       if (this.currentTab === 'gps' && this.locationService?.lastKnownPosition) {
-        this.updateGPSPageData();
+        this.updateGoogleMap(this.locationService.lastKnownPosition);
       }
     }, 5000);
   }
@@ -855,12 +993,103 @@ class DriverApp {
       if (distanceElement) distanceElement.innerHTML = `📏 Distanță parcursă: <strong>${distance.toFixed(2)} km</strong>`;
       const mapSubtitle = document.getElementById('gpsMapSubtitle');
       if (mapSubtitle) mapSubtitle.textContent = `Tracking activ: ${distance.toFixed(2)} km`;
+      this.initGoogleMap(locationData);
     }
   }
 
-  calculateRoute() { this.showToast('🗺️ Calculez cea mai bună rută...'); setTimeout(() => this.showToast('✅ Ruta calculată! Timp estimat: 2h 15min'), 2000); }
+  async calculateRoute() {
+    if (!this.gdirectionsService || !this.gdirectionsRenderer || !this.locationService?.lastKnownPosition) {
+      this.showToast('❌ Harta sau locația nu sunt gata');
+      return;
+    }
+  
+    // ceri destinația simplu (poți face UI mai fancy ulterior)
+    const input = prompt('Destinație (adresă sau "lat,lng"):', '');
+    if (!input) return;
+  
+    let destination = input;
+    if (/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(input)) {
+      const [dlat, dlng] = input.split(',').map(Number);
+      destination = { lat: dlat, lng: dlng };
+    }
+  
+    const origin = {
+      lat: this.locationService.lastKnownPosition.latitude,
+      lng: this.locationService.lastKnownPosition.longitude
+    };
+  
+    this.showToast('🗺️ Calculez ruta...');
+    this.gdirectionsService.route(
+      {
+        origin,
+        destination,
+        travelMode: google.maps.TravelMode.DRIVING,
+        drivingOptions: {
+          departureTime: new Date(),
+          trafficModel: google.maps.TrafficModel.BEST_GUESS
+        }
+      },
+      (result, status) => {
+        if (status === 'OK') {
+          this.gdirectionsRenderer.setDirections(result);
+          const leg = result.routes[0].legs[0];
+          this.showToast(`✅ Ruta: ${leg.distance.text}, ~${leg.duration_in_traffic?.text || leg.duration.text}`);
+        } else {
+          console.warn('Route failed:', status);
+          this.showToast('❌ Nu pot calcula ruta');
+        }
+      }
+    );
+  }
+
   findParkingZones() { this.showToast('🅿️ Caut zone de parcare în apropiere...'); setTimeout(() => this.showToast('✅ Găsite 3 zone de parcare într-un radius de 5km'), 1500); }
   findGasStations() { this.showToast('⛽ Caut stații de combustibil...'); setTimeout(() => this.showToast('✅ Găsite 5 stații într-un radius de 10km'), 1500); }
+  
+  nearbySearch(type, radius = 5000) {
+    if (!this.gplaces || !this.locationService?.lastKnownPosition) {
+      this.showToast('❌ Harta/locația nu sunt gata');
+      return;
+    }
+  
+    const loc = new google.maps.LatLng(
+      this.locationService.lastKnownPosition.latitude,
+      this.locationService.lastKnownPosition.longitude
+    );
+  
+    const request = { location: loc, radius, type }; // 'gas_station' sau 'parking'
+  
+    this.showToast('🔎 Caut în apropiere...');
+    this.gplaces.nearbySearch(request, (results, status) => {
+      if (status !== 'OK' || !results?.length) {
+        this.showToast('⚠️ Nimic găsit în zonă');
+        return;
+      }
+  
+      // pune markere simple
+      results.slice(0, 10).forEach(place => {
+        const m = new google.maps.Marker({
+          map: this.gmap,
+          position: place.geometry.location,
+          title: place.name
+        });
+        const inf = new google.maps.InfoWindow({
+          content: `<div><strong>${place.name}</strong><br>${place.vicinity || ''}</div>`
+        });
+        m.addListener('click', () => inf.open({ map: this.gmap, anchor: m }));
+      });
+  
+      // ajustează viewport
+      const bounds = new google.maps.LatLngBounds();
+      results.forEach(p => bounds.extend(p.geometry.location));
+      bounds.extend(loc);
+      this.gmap.fitBounds(bounds);
+  
+      this.showToast(`✅ Găsite ${results.length} locații`);
+    });
+  }
+  
+  findGasStations() { this.nearbySearch('gas_station', 8000); }
+  findParkingZones() { this.nearbySearch('parking', 6000); }
 
   shareLocation() {
     if (this.locationService?.lastKnownPosition) {
