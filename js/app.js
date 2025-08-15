@@ -12,16 +12,16 @@ class DriverApp {
     this.currentLocation = null;
 
     // --- Google Maps state ---
-    googleMapsPromise = null;
-    gmap = null;
-    gmarker = null;
-    gaccuracy = null;
-    gpolyline = null;
-    gtrackCoords = [];
-    gdirectionsService = null;
-    gdirectionsRenderer = null;
-    gtrafficLayer = null;
-    gplaces = null;
+    this.googleMapsPromise = null;
+    this.gmap = null;
+    this.gmarker = null;
+    this.gaccuracy = null;
+    this.gpolyline = null;
+    this.gtrackCoords = [];
+    this.gdirectionsService = null;
+    this.gdirectionsRenderer = null;
+    this.gtrafficLayer = null;
+    this.gplaces = null;
 
     // Initialize components with error handling
     try {
